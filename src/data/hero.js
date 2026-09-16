@@ -1,0 +1,151 @@
+/**
+ * Hero content. Everything shown in the scroll chapters lives here — none of
+ * it is hard-coded in JSX. Ranges are section-scroll progress (0–1) and are
+ * the source of truth for `docs/hero-scroll-map.md`; keep that file in sync
+ * if these change.
+ *
+ * Deliberately left off the site: phone number, and reference names/contacts
+ * from the resume — those don't belong on a public page.
+ */
+
+export const PROFILE = {
+  name: "Aniketh A Keshava",
+  role: "Software Engineer",
+  tagline:
+    "Full-stack & AI engineer — 7+ years shipping web, mobile and backend products.",
+  location: "Bangalore, India",
+  email: "anick8ak@gmail.com",
+  linkedin: "https://www.linkedin.com/in/aniketh-ak",
+  github: "https://github.com/anick8",
+};
+
+/**
+ * @typedef {object} Chapter
+ * @property {string} id
+ * @property {'left'|'right'} side
+ * @property {{ inStart: number, inEnd: number, outStart: number|null, outEnd: number|null }} range
+ * @property {string} eyebrow
+ * @property {string} title
+ */
+
+export const CHAPTERS = [
+  {
+    id: "intro",
+    side: "left",
+    range: { inStart: 0, inEnd: 0, outStart: 0.1, outEnd: 0.14 },
+    eyebrow: PROFILE.location,
+    name: PROFILE.name,
+    role: PROFILE.role,
+    tagline: PROFILE.tagline,
+    ctaPrimary: { label: "Explore", href: "#about" },
+    ctaSecondary: { label: "Get in touch", href: `mailto:${PROFILE.email}` },
+  },
+  {
+    id: "about",
+    side: "right",
+    range: { inStart: 0.16, inEnd: 0.2, outStart: 0.34, outEnd: 0.38 },
+    eyebrow: "About",
+    title: "Full-stack, mobile & AI",
+    summary:
+      "Software engineer and full-stack developer with over 7 years building web and mobile " +
+      "applications end to end. Deep experience across Node.js, React and Python, with a focus " +
+      "on scalable microservices and clean user experiences. More recently, I have moved into " +
+      "AI-driven development — using LLM tools like Claude Code to build and ship faster while " +
+      "keeping quality high.",
+    stats: ["7+ years experience", "Web · Mobile · AI", "AWS Certified"],
+  },
+  {
+    id: "now",
+    side: "left",
+    range: { inStart: 0.46, inEnd: 0.5, outStart: 0.6, outEnd: 0.64 },
+    eyebrow: "Currently",
+    title: "Recent work",
+    jobs: [
+      {
+        role: "Freelance Fullstack Developer",
+        company: "Flowshaala",
+        period: "02/2026 – Present · Remote",
+        bullets: [
+          "Sole architect of a full-stack MERN platform for yoga class discovery and booking — 117 commits in 3 months.",
+          "Built end-to-end Razorpay payments: orders, verification, webhooks and refunds.",
+          "JWT auth with role-based access, Google OAuth, and a full admin panel with attendance tracking.",
+        ],
+      },
+      {
+        role: "Software Developer",
+        company: "StoreHippo",
+        period: "05/2022 – 01/2026 · Gurgaon (Remote)",
+        bullets: [
+          "Led a React Native mobile app generator powering multiple client apps.",
+          "Built Node.js backend services for push notifications, Google login and payment gateways.",
+          "Managed Android/iOS release cycles and production deployments end to end.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "earlier",
+    side: "left",
+    range: { inStart: 0.66, inEnd: 0.7, outStart: 0.78, outEnd: 0.82 },
+    eyebrow: "Earlier",
+    title: "Backend & systems",
+    jobs: [
+      {
+        role: "Backend Developer",
+        company: "Hashx",
+        period: "08/2021 – 01/2022 · Bengaluru",
+        bullets: [
+          "Built RESTful APIs with Node.js, Express and PostgreSQL in a distributed system.",
+          "Improved system reliability by 45% through scalable microservice design.",
+        ],
+      },
+      {
+        role: "Systems Engineer",
+        company: "Intellicar Telematics",
+        period: "07/2018 – 07/2021 · Bangalore",
+        bullets: [
+          "Reverse-engineered vehicle ECU data across multiple automobile manufacturers.",
+          "Automated debugging and data validation for IoT telemetry using Python.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "skills",
+    side: "left",
+    range: { inStart: 0.82, inEnd: 0.85, outStart: 0.9, outEnd: 0.92 },
+    eyebrow: "Skills",
+    title: "Toolbox",
+    groups: [
+      { label: "Frontend", items: ["React", "Angular", "Next.js"] },
+      { label: "Backend", items: ["Node.js", "Express", "Python"] },
+      {
+        label: "Mobile",
+        items: ["React Native", "Apache Cordova", "iOS", "Android"],
+      },
+      { label: "Data", items: ["PostgreSQL", "MongoDB", "MySQL", "Cassandra"] },
+      { label: "Cloud", items: ["AWS", "Git", "Linux"] },
+    ],
+    education: {
+      degree: "B.E. Computer Science",
+      school: "Reva Institute of Technology and Management",
+      period: "2014 – 2018 · Bangalore",
+    },
+  },
+  {
+    id: "wins",
+    side: "left",
+    range: { inStart: 0.93, inEnd: 0.96, outStart: null, outEnd: null },
+    eyebrow: "Recognition",
+    title: "Wins & contact",
+    achievements: [
+      'Hackathon awards for "IRIS", an IoT solution, at multiple hackathons including Rajasthan.',
+      "First place at a Makeathon for a carbon-reducing home automation concept.",
+    ],
+    links: [
+      { label: "Email", href: `mailto:${PROFILE.email}` },
+      { label: "LinkedIn", href: PROFILE.linkedin },
+      { label: "GitHub", href: PROFILE.github },
+    ],
+  },
+];

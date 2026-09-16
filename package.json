@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "frames:extract": "bash scripts/extract-frames.sh left-right 91 && bash scripts/extract-frames.sh transform 151"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

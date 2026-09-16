@@ -1,8 +1,17 @@
-import './globals.css';
+import { Inter } from "next/font/google";
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
 
 export const metadata = {
-  title: 'fullstacketh3D',
-  description: 'A full-stack Ethereum dApp with an interactive 3D interface.',
+  title: "Aniketh A Keshava — Software Engineer",
+  description:
+    "Software engineer and full-stack developer with over 7 years building web, mobile and " +
+    "AI-driven products — Node.js, React, React Native and Python.",
 };
 
 /**
@@ -11,8 +20,8 @@ export const metadata = {
  */
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" className={inter.variable}>
+      <body className="font-sans">{children}</body>
     </html>
   );
 }
