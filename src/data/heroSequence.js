@@ -27,7 +27,7 @@ export function frameSrc(index) {
  * same rest pose as left-right 051, so the two sequences hand off seamlessly.
  */
 export const TRANSFORM_COUNT = 151;
-export const TRANSFORM_DIR = '/frames/transform';
+export const TRANSFORM_DIR = '/frames/t2';
 /** Scroll progress (0–1) through the hero section before the transform starts. */
 export const SCROLL_START = 0.1;
 /** Lerp factor for scroll scrubbing — a touch snappier than the mouse. */

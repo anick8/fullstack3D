@@ -65,7 +65,7 @@ export const CHAPTERS = [
       "Software engineer and full-stack developer with over 7 years building web and mobile " +
       "applications end to end. Deep experience across Node.js, React and Python, with a focus " +
       "on scalable microservices and clean user experiences. More recently, I have moved into " +
-      "AI-driven development — using LLM tools like Claude Code to build and ship faster while " +
+      "AI-driven development using LLM tools like Claude Code to build and ship faster while " +
       "keeping quality high.",
     stats: ["7+ years experience", "Web · Mobile · AI", "AWS Certified"],
   },
