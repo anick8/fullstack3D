@@ -12,11 +12,25 @@ export const PROFILE = {
   name: "Aniketh A Keshava",
   role: "Software Engineer",
   tagline:
-    "Full-stack & AI engineer — 7+ years shipping web, mobile and backend products.",
+    "Full-stack and AI engineer with 7+ years shipping web, mobile and backend products.",
+  availability: "Open to freelance projects and full-time roles.",
   location: "Bangalore, India",
   email: "anick8ak@gmail.com",
   linkedin: "https://www.linkedin.com/in/aniketh-ak",
   github: "https://github.com/anick8",
+};
+
+/** Contact paths shared by the persistent contact bar and the final chapter. */
+export const CONTACT = {
+  email: PROFILE.email,
+  links: [
+    {
+      label: "LinkedIn",
+      ariaLabel: "LinkedIn profile and resume",
+      href: PROFILE.linkedin,
+    },
+    { label: "GitHub", ariaLabel: "GitHub profile", href: PROFILE.github },
+  ],
 };
 
 /**
@@ -33,12 +47,13 @@ export const CHAPTERS = [
     id: "intro",
     side: "left",
     range: { inStart: 0, inEnd: 0, outStart: 0.1, outEnd: 0.14 },
-    eyebrow: PROFILE.location,
     name: PROFILE.name,
     role: PROFILE.role,
     tagline: PROFILE.tagline,
-    ctaPrimary: { label: "Explore", href: "#about" },
-    ctaSecondary: { label: "Get in touch", href: `mailto:${PROFILE.email}` },
+    availability: PROFILE.availability,
+    location: PROFILE.location,
+    ctaPrimary: { label: "Email me", href: `mailto:${PROFILE.email}` },
+    ctaSecondary: { label: "See my work", target: 0.18 },
   },
   {
     id: "about",
@@ -64,6 +79,7 @@ export const CHAPTERS = [
       {
         role: "Freelance Fullstack Developer",
         company: "Flowshaala",
+        url: null, // public URL pending from Aniketh
         period: "02/2026 – Present · Remote",
         bullets: [
           "Sole architect of a full-stack MERN platform for yoga class discovery and booking — 117 commits in 3 months.",
@@ -96,7 +112,7 @@ export const CHAPTERS = [
         period: "08/2021 – 01/2022 · Bengaluru",
         bullets: [
           "Built RESTful APIs with Node.js, Express and PostgreSQL in a distributed system.",
-          "Improved system reliability by 45% through scalable microservice design.",
+          "Designed scalable microservices that made a distributed system more reliable.",
         ],
       },
       {
@@ -136,16 +152,14 @@ export const CHAPTERS = [
     id: "wins",
     side: "left",
     range: { inStart: 0.93, inEnd: 0.96, outStart: null, outEnd: null },
-    eyebrow: "Recognition",
-    title: "Wins & contact",
+    title: "Let's build something",
+    availability: PROFILE.availability,
+    email: CONTACT.email,
+    links: CONTACT.links,
+    achievementsLabel: "Recognition",
     achievements: [
       'Hackathon awards for "IRIS", an IoT solution, at multiple hackathons including Rajasthan.',
       "First place at a Makeathon for a carbon-reducing home automation concept.",
-    ],
-    links: [
-      { label: "Email", href: `mailto:${PROFILE.email}` },
-      { label: "LinkedIn", href: PROFILE.linkedin },
-      { label: "GitHub", href: PROFILE.github },
     ],
   },
 ];

@@ -11,7 +11,7 @@ export const metadata = {
   title: "Aniketh A Keshava — Software Engineer",
   description:
     "Software engineer and full-stack developer with over 7 years building web, mobile and " +
-    "AI-driven products — Node.js, React, React Native and Python.",
+    "AI-driven products with Node.js, React, React Native and Python.",
 };
 
 /**

@@ -34,17 +34,21 @@ target every animation frame with `SCROLL_LERP = 0.16`
 
 ## Chapters
 
-| #   | id        | Side  | Fade in      | Hold               | Fade out               | Frames visible            |
-| --- | --------- | ----- | ------------ | ------------------ | ---------------------- | ------------------------- |
-| 1   | `intro`   | left  | on from load | 0 – 0.10           | 0.10 – 0.14            | `lr2` mouse, then 001–008 |
-| 2   | `about`   | right | 0.16 – 0.20  | 0.20 – 0.34        | 0.34 – 0.38            | 011–048                   |
-| 3   | `now`     | left  | 0.46 – 0.50  | 0.50 – 0.60        | 0.60 – 0.64            | 061–091                   |
-| 4   | `earlier` | left  | 0.66 – 0.70  | 0.70 – 0.78        | 0.78 – 0.82            | 094–121                   |
-| 5   | `skills`  | left  | 0.82 – 0.85  | 0.85 – 0.90        | 0.90 – 0.92            | 121–138                   |
-| 6   | `wins`    | left  | 0.93 – 0.96  | 0.96 – 1.00, holds | none — stays on screen | 139–151                   |
+| #   | id                    | Side  | Fade in      | Hold               | Fade out               | Frames visible            |
+| --- | --------------------- | ----- | ------------ | ------------------ | ---------------------- | ------------------------- |
+| 1   | `intro`               | left  | on from load | 0 – 0.10           | 0.10 – 0.14            | `lr2` mouse, then 001–008 |
+| 2   | `about`               | right | 0.16 – 0.20  | 0.20 – 0.34        | 0.34 – 0.38            | 011–048                   |
+| 3   | `now`                 | left  | 0.46 – 0.50  | 0.50 – 0.60        | 0.60 – 0.64            | 061–091                   |
+| 4   | `earlier`             | left  | 0.66 – 0.70  | 0.70 – 0.78        | 0.78 – 0.82            | 094–121                   |
+| 5   | `skills`              | left  | 0.82 – 0.85  | 0.85 – 0.90        | 0.90 – 0.92            | 121–138                   |
+| 6   | `wins` ("Let's talk") | left  | 0.93 – 0.96  | 0.96 – 1.00, holds | none — stays on screen | 139–151                   |
 
 Gaps between a chapter's fade-out and the next chapter's fade-in are
 deliberate: frames get a moment on their own with no card over them.
+
+A fixed contact bar (`src/components/ContactBar.jsx`, top-right) sits above
+every chapter for the whole runway: email (click copies, falls back to mailto),
+LinkedIn (also serves as the resume) and GitHub.
 
 ## Visibility math
 
@@ -58,4 +62,4 @@ are `null` (used for the final "wins" chapter, which holds to the end).
 All copy lives in `src/data/hero.js` (`PROFILE`, `CHAPTERS`) — none is
 hard-coded in JSX. Deliberately excluded from the site: the phone number and
 the resume's third-party references (their names, phone numbers and emails).
-Only the owner's own email and LinkedIn are shown, in the final chapter.
+Only the owner's own email, LinkedIn and GitHub are shown, in the contact bar and the final chapter.

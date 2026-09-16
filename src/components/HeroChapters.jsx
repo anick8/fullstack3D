@@ -13,11 +13,11 @@ const RISE_PX = 32;
 
 const SIDE_CLASS = {
   left:
-    "pointer-events-none absolute inset-x-4 bottom-6 z-10 flex justify-center " +
-    "md:inset-x-auto md:inset-y-0 md:bottom-auto md:left-6 md:items-center md:justify-start lg:left-16",
+    "pointer-events-none absolute inset-x-4 top-6 bottom-6 z-10 flex items-end justify-center " +
+    "md:inset-x-auto md:inset-y-10 md:left-6 md:items-center md:justify-start lg:left-16",
   right:
-    "pointer-events-none absolute inset-x-4 bottom-6 z-10 flex justify-center " +
-    "md:inset-x-auto md:inset-y-0 md:bottom-auto md:right-6 md:items-center md:justify-end lg:right-16",
+    "pointer-events-none absolute inset-x-4 top-6 bottom-6 z-10 flex items-end justify-center " +
+    "md:inset-x-auto md:inset-y-10 md:right-6 md:items-center md:justify-end lg:right-16",
 };
 
 /**
@@ -192,27 +192,32 @@ function Eyebrow({ children }) {
 function IntroContent({ chapter, onExplore }) {
   return (
     <>
-      <Eyebrow>{chapter.eyebrow}</Eyebrow>
       <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-6xl">
         {chapter.name}
       </h1>
       <p className="mt-3 text-lg font-light text-white/80 sm:text-2xl">
         {chapter.role}
       </p>
-      <p className="mt-6 max-w-prose text-sm leading-relaxed text-white/60 sm:text-base">
+      <p className="mt-6 max-w-prose text-sm leading-relaxed text-white/75 sm:text-base">
         {chapter.tagline}
       </p>
+      <p className="mt-3 text-sm text-white/75">
+        {chapter.availability} {chapter.location}.
+      </p>
       <div className="mt-8 flex flex-wrap gap-3">
-        <button
-          type="button"
+        <a
+          href={chapter.ctaPrimary.href}
           className="glass-pill glass-pill--primary"
-          onClick={() => onExplore(0.18)}
         >
           {chapter.ctaPrimary.label}
-        </button>
-        <a href={chapter.ctaSecondary.href} className="glass-pill">
-          {chapter.ctaSecondary.label}
         </a>
+        <button
+          type="button"
+          className="glass-pill"
+          onClick={() => onExplore(chapter.ctaSecondary.target)}
+        >
+          {chapter.ctaSecondary.label}
+        </button>
       </div>
     </>
   );
@@ -253,7 +258,19 @@ function JobsContent({ chapter }) {
               {job.role}
             </p>
             <p className="text-sm text-white/60">
-              {job.company} · {job.period}
+              {job.url ? (
+                <a
+                  href={job.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-white/40 underline-offset-4 hover:decoration-white"
+                >
+                  {job.company}
+                </a>
+              ) : (
+                job.company
+              )}{" "}
+              · {job.period}
             </p>
             <ul className="mt-2 space-y-1.5">
               {job.bullets.map((b) => (
@@ -307,24 +324,42 @@ function SkillsContent({ chapter }) {
 function WinsContent({ chapter }) {
   return (
     <>
-      <Eyebrow>{chapter.eyebrow}</Eyebrow>
       <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
         {chapter.title}
       </h2>
-      <ul className="mt-4 space-y-2">
+      <p className="mt-4 text-sm leading-relaxed text-white/75 sm:text-base">
+        {chapter.availability}
+      </p>
+      <a
+        href={`mailto:${chapter.email}`}
+        className="mt-3 inline-block break-all text-lg font-medium text-white underline decoration-white/40 underline-offset-4 hover:decoration-white sm:text-xl"
+      >
+        {chapter.email}
+      </a>
+      <div className="mt-6 flex flex-wrap gap-3">
+        {chapter.links.map((link) => (
+          <a
+            key={link.label}
+            href={link.href}
+            aria-label={link.ariaLabel}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="glass-pill"
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+      <h3 className="mt-8 text-sm font-medium text-white/80">
+        {chapter.achievementsLabel}
+      </h3>
+      <ul className="mt-2 space-y-2">
         {chapter.achievements.map((a) => (
           <li key={a} className="text-sm leading-relaxed text-white/75">
             {a}
           </li>
         ))}
       </ul>
-      <div className="mt-6 flex flex-wrap gap-3">
-        {chapter.links.map((link) => (
-          <a key={link.label} href={link.href} className="glass-pill">
-            {link.label}
-          </a>
-        ))}
-      </div>
     </>
   );
 }
