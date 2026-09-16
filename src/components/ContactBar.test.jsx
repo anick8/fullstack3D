@@ -43,6 +43,12 @@ describe("ContactBar", () => {
 
     expect(writeText).toHaveBeenCalledWith("me@example.com");
     expect(screen.getByRole("button")).toHaveTextContent("Copied");
+    expect(
+      screen.getByText("Copied").closest("[aria-hidden]"),
+    ).not.toHaveAttribute("aria-hidden", "true");
+    expect(
+      screen.getByText("me@example.com").closest("[aria-hidden]"),
+    ).toHaveAttribute("aria-hidden", "true");
     expect(screen.getByText("Email address copied")).toBeInTheDocument();
   });
 

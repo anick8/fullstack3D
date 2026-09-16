@@ -1,0 +1,130 @@
+- main [ref=f7e2]:
+  - navigation "Contact" [ref=f7e3]:
+    - button "Copy email address anick8ak@gmail.com" [ref=f7e4] [cursor=pointer]:
+      - generic [ref=f7e5]: anick8ak@gmail.com
+      - generic [aria-hidden] [ref=f7e6]: Copied
+    - link "LinkedIn profile and resume" [ref=f7e7] [cursor=pointer]:
+      - /url: https://www.linkedin.com/in/aniketh-ak
+      - text: LinkedIn
+    - link "GitHub profile" [ref=f7e8] [cursor=pointer]:
+      - /url: https://github.com/anick8
+      - text: GitHub
+  - generic [aria-hidden]:
+    - generic: Scroll
+  - generic [ref=f7e10]:
+    - generic:
+      - generic:
+        - generic [ref=f7e12]:
+          - heading "Aniketh AK" [level=1] [ref=f7e13]:
+            - generic [ref=f7e14]:
+              - generic [ref=f7e15]: Aniketh
+              - generic [ref=f7e18]: AK
+          - paragraph [ref=f7e21]: Software Engineer
+          - paragraph [ref=f7e22]: Full-stack and AI engineer with 7+ years shipping web, mobile and backend products.
+          - paragraph [ref=f7e23]: Open to freelance projects and full-time roles. Bangalore, India.
+          - generic [ref=f7e24]:
+            - link "Email me" [ref=f7e25] [cursor=pointer]:
+              - /url: mailto:anick8ak@gmail.com
+            - button "See my work" [ref=f7e26] [cursor=pointer]
+        - generic [ref=f7e28]:
+          - paragraph [ref=f7e29]: About
+          - heading "Full-stack, mobile & AI" [level=2] [ref=f7e30]
+          - paragraph [ref=f7e31]: Software engineer and full-stack developer with over 7 years building web and mobile applications end to end. Deep experience across Node.js, React and Python, with a focus on scalable microservices and clean user experiences. More recently, I have moved into AI-driven development using LLM tools like Claude Code to build and ship faster while keeping quality high.
+          - list [ref=f7e32]:
+            - listitem [ref=f7e33]: 7+ years experience
+            - listitem [ref=f7e34]: Web · Mobile · AI
+            - listitem [ref=f7e35]: AWS Certified
+        - generic [ref=f7e37]:
+          - paragraph [ref=f7e38]: Currently
+          - heading "Recent work" [level=2] [ref=f7e39]
+          - generic [ref=f7e40]:
+            - generic [ref=f7e41]:
+              - paragraph [ref=f7e42]: Freelance Fullstack Developer
+              - paragraph [ref=f7e43]:
+                - link "Flowshaala" [ref=f7e44] [cursor=pointer]:
+                  - /url: https://www.flowshaala.com
+                - text: · 02/2026 – Present · Remote
+              - list [ref=f7e45]:
+                - listitem [ref=f7e46]: Sole architect of a fullstack MERN platform for movement class discovery and booking.
+                - listitem [ref=f7e47]: Built Authentication, Payments, and Admin dashboards from scratch.
+            - generic [ref=f7e48]:
+              - paragraph [ref=f7e49]: Software Developer (Mobile Lead)
+              - paragraph [ref=f7e50]: StoreHippo · 05/2022 – 01/2026 · Gurgaon (Remote)
+              - list [ref=f7e51]:
+                - listitem [ref=f7e52]: Led the migration of a legacy Cordova codebase to React Native, improving maintainability and performance.
+                - listitem [ref=f7e53]: Built Node.js backend services for push notifications, Google login and payment gateways.
+                - listitem [ref=f7e54]: Managed Android/iOS release cycles and production deployments end to end.
+        - generic [ref=f7e56]:
+          - paragraph [ref=f7e57]: Earlier
+          - heading "Backend & systems" [level=2] [ref=f7e58]
+          - generic [ref=f7e59]:
+            - generic [ref=f7e60]:
+              - paragraph [ref=f7e61]: Backend Developer
+              - paragraph [ref=f7e62]: Hashx · 08/2021 – 01/2022 · Bengaluru
+              - list [ref=f7e63]:
+                - listitem [ref=f7e64]: Built RESTful APIs with Node.js, Express and PostgreSQL in a distributed system.
+                - listitem [ref=f7e65]: Designed scalable microservices that made a distributed system more reliable.
+            - generic [ref=f7e66]:
+              - paragraph [ref=f7e67]: Systems Engineer
+              - paragraph [ref=f7e68]: Intellicar Telematics · 07/2018 – 07/2021 · Bangalore
+              - list [ref=f7e69]:
+                - listitem [ref=f7e70]: Reverse-engineered vehicle ECU data across multiple automobile manufacturers.
+                - listitem [ref=f7e71]: Automated debugging and data validation for IoT telemetry using Python.
+        - generic [ref=f7e73]:
+          - paragraph [ref=f7e74]: Skills
+          - heading "Toolbox" [level=2] [ref=f7e75]
+          - generic [ref=f7e76]:
+            - generic [ref=f7e77]:
+              - paragraph [ref=f7e78]: Frontend
+              - list [ref=f7e79]:
+                - listitem [ref=f7e80]: React
+                - listitem [ref=f7e81]: Angular
+                - listitem [ref=f7e82]: Next.js
+            - generic [ref=f7e83]:
+              - paragraph [ref=f7e84]: Backend
+              - list [ref=f7e85]:
+                - listitem [ref=f7e86]: Node.js
+                - listitem [ref=f7e87]: Express
+                - listitem [ref=f7e88]: Python
+            - generic [ref=f7e89]:
+              - paragraph [ref=f7e90]: Mobile
+              - list [ref=f7e91]:
+                - listitem [ref=f7e92]: React Native
+                - listitem [ref=f7e93]: Apache Cordova
+                - listitem [ref=f7e94]: iOS
+                - listitem [ref=f7e95]: Android
+            - generic [ref=f7e96]:
+              - paragraph [ref=f7e97]: Data
+              - list [ref=f7e98]:
+                - listitem [ref=f7e99]: PostgreSQL
+                - listitem [ref=f7e100]: MongoDB
+                - listitem [ref=f7e101]: MySQL
+                - listitem [ref=f7e102]: Cassandra
+                - listitem [ref=f7e103]: SupaBase
+            - generic [ref=f7e104]:
+              - paragraph [ref=f7e105]: Cloud
+              - list [ref=f7e106]:
+                - listitem [ref=f7e107]: AWS
+                - listitem [ref=f7e108]: Git
+                - listitem [ref=f7e109]: Linux
+                - listitem [ref=f7e110]: Railway
+                - listitem [ref=f7e111]: Vercel
+          - generic [ref=f7e112]:
+            - paragraph [ref=f7e113]: B.E. Computer Science
+            - paragraph [ref=f7e114]: Reva Institute of Technology and Management · 2014 – 2018 · Bangalore
+        - generic [ref=f7e116]:
+          - heading "Let's build something" [level=2] [ref=f7e117]
+          - paragraph [ref=f7e118]: Open to freelance projects and full-time roles.
+          - link "anick8ak@gmail.com" [ref=f7e119] [cursor=pointer]:
+            - /url: mailto:anick8ak@gmail.com
+          - generic [ref=f7e120]:
+            - link "LinkedIn profile and resume" [ref=f7e121] [cursor=pointer]:
+              - /url: https://www.linkedin.com/in/aniketh-ak
+              - text: LinkedIn
+            - link "GitHub profile" [ref=f7e122] [cursor=pointer]:
+              - /url: https://github.com/anick8
+              - text: GitHub
+          - heading "Recognition" [level=3] [ref=f7e123]
+          - list [ref=f7e124]:
+            - listitem [ref=f7e125]: Hackathon awards for "IRIS", an IoT solution, at multiple hackathons including Rajasthan.
+            - listitem [ref=f7e126]: First place at a Makeathon for a carbon-reducing home automation concept.

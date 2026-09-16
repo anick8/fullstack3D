@@ -8,8 +8,10 @@
  * from the resume — those don't belong on a public page.
  */
 
+import { TECH_STACK } from "./techStack";
+
 export const PROFILE = {
-  name: "Aniketh A Keshava",
+  name: "Aniketh AK",
   role: "Software Engineer",
   tagline:
     "Full-stack and AI engineer with 7+ years shipping web, mobile and backend products.",
@@ -18,6 +20,13 @@ export const PROFILE = {
   email: "anick8ak@gmail.com",
   linkedin: "https://www.linkedin.com/in/aniketh-ak",
   github: "https://github.com/anick8",
+};
+
+/** Shared with both the About and Skills chapters. */
+export const EDUCATION = {
+  degree: "CSE Grad",
+  school: "Reva University",
+  period: "2014 – 2018 · Bangalore",
 };
 
 /** Contact paths shared by the persistent contact bar and the final chapter. */
@@ -36,7 +45,7 @@ export const CONTACT = {
 /**
  * @typedef {object} Chapter
  * @property {string} id
- * @property {'left'|'right'} side
+ * @property {'left'|'right'|'top-right'|'stack'} side
  * @property {{ inStart: number, inEnd: number, outStart: number|null, outEnd: number|null }} range
  * @property {string} eyebrow
  * @property {string} title
@@ -53,21 +62,30 @@ export const CHAPTERS = [
     availability: PROFILE.availability,
     location: PROFILE.location,
     ctaPrimary: { label: "Email me", href: `mailto:${PROFILE.email}` },
-    ctaSecondary: { label: "See my work", target: 0.18 },
+    ctaSecondary: { label: "See my work", target: 0.2 },
   },
   {
     id: "about",
-    side: "right",
-    range: { inStart: 0.16, inEnd: 0.2, outStart: 0.34, outEnd: 0.38 },
+    side: "top-right",
+    range: { inStart: 0, inEnd: 0, outStart: 0.1, outEnd: 0.14 },
     eyebrow: "About",
-    title: "Full-stack, mobile & AI",
+    title: "Fullstack, Mobile & AI",
     summary:
-      "Software engineer and full-stack developer with over 7 years building web and mobile " +
-      "applications end to end. Deep experience across Node.js, React and Python, with a focus " +
-      "on scalable microservices and clean user experiences. More recently, I have moved into " +
-      "AI-driven development using LLM tools like Claude Code to build and ship faster while " +
-      "keeping quality high.",
+      "Full Stack Engineer with 7+ years building web and mobile products"+
+      "across e-commerce, blockchain, and IoT. Specializes in Node.js, React/React Native,"+
+      " and Python, with recent focus on shipping AI-assisted development workflows  independently"+
+      " architected and delivered a production MERN platform end-to-end in 3 months.",
     stats: ["7+ years experience", "Web · Mobile · AI", "AWS Certified"],
+    education: EDUCATION,
+  },
+  {
+    id: "stack",
+    side: "stack",
+    range: { inStart: 0.14, inEnd: 0.18, outStart: 0.4, outEnd: 0.44 },
+    title: "Tools I ship with",
+    pauseLabel: "Pause logo carousel",
+    playLabel: "Play logo carousel",
+    items: TECH_STACK,
   },
   {
     id: "now",
@@ -79,21 +97,19 @@ export const CHAPTERS = [
       {
         role: "Freelance Fullstack Developer",
         company: "Flowshaala",
-        url: null, // public URL pending from Aniketh
+        url: "https://www.flowshaala.com", // public URL pending from Aniketh
         period: "02/2026 – Present · Remote",
         bullets: [
-          "Sole architect of a full-stack MERN platform for yoga class discovery and booking — 117 commits in 3 months.",
-          "Built end-to-end Razorpay payments: orders, verification, webhooks and refunds.",
-          "JWT auth with role-based access, Google OAuth, and a full admin panel with attendance tracking.",
+          "Sole architect of a fullstack MERN platform for movement class discovery and booking.",
+          "Built Authentication, Payments, and Admin dashboards from scratch.",
         ],
       },
       {
-        role: "Software Developer",
+        role: "Software Developer (Mobile Lead)",
         company: "StoreHippo",
-        period: "05/2022 – 01/2026 · Gurgaon (Remote)",
+        period: "05/2022 – 01/2026 · (Remote)",
         bullets: [
-          "Led a React Native mobile app generator powering multiple client apps.",
-          "Built Node.js backend services for push notifications, Google login and payment gateways.",
+          "Led the migration of a legacy Cordova codebase to React Native, improving maintainability and performance.",
           "Managed Android/iOS release cycles and production deployments end to end.",
         ],
       },
@@ -139,14 +155,13 @@ export const CHAPTERS = [
         label: "Mobile",
         items: ["React Native", "Apache Cordova", "iOS", "Android"],
       },
-      { label: "Data", items: ["PostgreSQL", "MongoDB", "MySQL", "Cassandra"] },
-      { label: "Cloud", items: ["AWS", "Git", "Linux"] },
+      {
+        label: "Data",
+        items: ["PostgreSQL", "MongoDB", "MySQL", "Cassandra", "SupaBase"],
+      },
+      { label: "Cloud", items: ["AWS", "Git", "Linux", "Railway", "Vercel"] },
     ],
-    education: {
-      degree: "B.E. Computer Science",
-      school: "Reva Institute of Technology and Management",
-      period: "2014 – 2018 · Bangalore",
-    },
+    education: EDUCATION,
   },
   {
     id: "wins",

@@ -5,6 +5,7 @@ import { CHAPTERS } from "../data/hero";
 import { SCROLL_LERP } from "../data/heroSequence";
 import { chapterVisibility, sectionProgress } from "../lib/sequence";
 import GlassPanel from "./GlassPanel";
+import { TechCarousel } from "./TechCarousel";
 
 /** How close the eased progress must get to the target before we stop nudging it. */
 const PROGRESS_EPS = 0.0005;
@@ -18,10 +19,27 @@ const SIDE_CLASS = {
   right:
     "pointer-events-none absolute inset-x-4 top-6 bottom-6 z-10 flex items-end justify-center " +
     "md:inset-x-auto md:inset-y-10 md:right-6 md:items-center md:justify-end lg:right-16",
+  // Anchored to the top instead of centered, and pushed down far enough to
+  // clear the fixed ContactBar (top-right, ~44px tall) at every width.
+  "top-right":
+    "pointer-events-none absolute inset-x-4 top-20 z-10 flex items-start justify-center " +
+    "md:inset-x-auto md:right-6 md:top-24 md:bottom-auto md:items-start md:justify-end lg:right-16",
+  // Bottom strip on phones (clear of the centred character); a column in the
+  // empty left 0–30% of frames 008–061 on desktop.
+  stack:
+    "pointer-events-none absolute inset-x-4 bottom-6 z-10 flex items-end justify-center " +
+    "md:inset-x-auto md:top-24 md:bottom-10 md:left-6 md:items-center md:justify-start lg:left-16",
+};
+
+const PANEL_CLASS = {
+  default:
+    "pointer-events-auto max-h-[70vh] w-[min(92vw,30rem)] overflow-y-auto px-6 py-7 sm:px-8 sm:py-9",
+  stack:
+    "pointer-events-auto w-[min(92vw,30rem)] p-4 md:h-full md:max-h-[40rem] md:w-60 md:p-5 lg:w-64",
 };
 
 /**
- * Six glass "chapters" of resume content that fade in/out over the hero's
+ * Seven glass "chapters" of resume content that fade in/out over the hero's
  * scroll runway, synced to the same section-progress and lerp the canvas
  * uses. Positioned in the empty space of each transform frame (see
  * docs/hero-scroll-map.md).
@@ -30,6 +48,7 @@ export default function HeroChapters() {
   const outerRef = useRef(null);
   const cardRefs = useRef([]);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [shown, setShown] = useState(() => CHAPTERS.map(() => false));
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -50,6 +69,7 @@ export default function HeroChapters() {
       applied: null, // last progress the cards were painted at
       raf: 0,
       vis: new Array(CHAPTERS.length).fill(-1),
+      shown: new Array(CHAPTERS.length).fill(false),
     };
 
     const updateTarget = () => {
@@ -73,6 +93,10 @@ export default function HeroChapters() {
         el.style.pointerEvents = shown ? "auto" : "none";
         if (shown) el.removeAttribute("inert");
         else el.setAttribute("inert", "");
+        if (state.shown[i] !== shown) {
+          state.shown[i] = shown;
+          setShown((prev) => prev.map((s, j) => (j === i ? shown : s)));
+        }
         if (!reducedMotion) {
           const translate = (1 - v) * RISE_PX;
           const scale = 0.98 + v * 0.02;
@@ -149,9 +173,13 @@ export default function HeroChapters() {
           >
             <GlassPanel
               tint={chapter.id !== "intro"}
-              className="pointer-events-auto max-h-[70vh] w-[min(92vw,30rem)] overflow-y-auto px-6 py-7 sm:px-8 sm:py-9"
+              className={PANEL_CLASS[chapter.id] ?? PANEL_CLASS.default}
             >
-              <ChapterContent chapter={chapter} onExplore={handleExplore} />
+              <ChapterContent
+                chapter={chapter}
+                active={shown[i]}
+                onExplore={handleExplore}
+              />
             </GlassPanel>
           </div>
         ))}
@@ -161,14 +189,16 @@ export default function HeroChapters() {
 }
 
 /**
- * @param {{ chapter: object, onExplore: (p: number) => void }} props
+ * @param {{ chapter: object, active: boolean, onExplore: (p: number) => void }} props
  */
-function ChapterContent({ chapter, onExplore }) {
+function ChapterContent({ chapter, active, onExplore }) {
   switch (chapter.id) {
     case "intro":
       return <IntroContent chapter={chapter} onExplore={onExplore} />;
     case "about":
       return <AboutContent chapter={chapter} />;
+    case "stack":
+      return <TechCarousel chapter={chapter} active={active} />;
     case "now":
     case "earlier":
       return <JobsContent chapter={chapter} />;
@@ -197,9 +227,6 @@ function IntroContent({ chapter, onExplore }) {
       </h1>
       <p className="mt-3 text-lg font-light text-white/80 sm:text-2xl">
         {chapter.role}
-      </p>
-      <p className="mt-6 max-w-prose text-sm leading-relaxed text-white/75 sm:text-base">
-        {chapter.tagline}
       </p>
       <p className="mt-3 text-sm text-white/75">
         {chapter.availability} {chapter.location}.
@@ -240,6 +267,14 @@ function AboutContent({ chapter }) {
           </li>
         ))}
       </ul>
+      <div className="mt-6 border-t border-white/10 pt-4">
+        <p className="text-sm font-medium text-white">
+          {chapter.education.degree}
+        </p>
+        <p className="text-sm text-white/60">
+          {chapter.education.school} · {chapter.education.period}
+        </p>
+      </div>
     </>
   );
 }
@@ -309,14 +344,7 @@ function SkillsContent({ chapter }) {
           </div>
         ))}
       </div>
-      <div className="mt-6 border-t border-white/10 pt-4">
-        <p className="text-sm font-medium text-white">
-          {chapter.education.degree}
-        </p>
-        <p className="text-sm text-white/60">
-          {chapter.education.school} · {chapter.education.period}
-        </p>
-      </div>
+      
     </>
   );
 }
@@ -350,16 +378,7 @@ function WinsContent({ chapter }) {
           </a>
         ))}
       </div>
-      <h3 className="mt-8 text-sm font-medium text-white/80">
-        {chapter.achievementsLabel}
-      </h3>
-      <ul className="mt-2 space-y-2">
-        {chapter.achievements.map((a) => (
-          <li key={a} className="text-sm leading-relaxed text-white/75">
-            {a}
-          </li>
-        ))}
-      </ul>
+      
     </>
   );
 }

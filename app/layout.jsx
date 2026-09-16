@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import MotionProvider from "../src/components/MotionProvider";
 import "./globals.css";
 
 const inter = Inter({
@@ -21,7 +22,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        <MotionProvider>{children}</MotionProvider>
+      </body>
     </html>
   );
 }

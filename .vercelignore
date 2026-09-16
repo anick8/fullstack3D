@@ -1,0 +1,8 @@
+# Source archives the frame sequences were extracted from — not referenced
+# by any code (see src/data/heroSequence.js FRAME_DIR/TRANSFORM_DIR), and
+# already excluded from git via .gitignore's `public/*.zip`. The Vercel CLI's
+# local deploy doesn't honor .gitignore, so they need listing here too.
+public/*.zip
+
+# Superseded by public/frames/lr2 (same sequence, current naming).
+public/left-right
