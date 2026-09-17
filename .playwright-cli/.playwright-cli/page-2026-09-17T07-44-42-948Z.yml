@@ -1,0 +1,157 @@
+- main [ref=e2]:
+  - navigation "Contact" [ref=e3]:
+    - button "Copy email address anick8ak@gmail.com" [ref=e4]:
+      - generic [ref=e5]: anick8ak@gmail.comEmail
+      - text: Copied
+    - link "LinkedIn profile and resume" [ref=e6] [cursor=pointer]:
+      - /url: https://www.linkedin.com/in/aniketh-ak
+      - text: LinkedIn
+    - link "GitHub profile" [ref=e7] [cursor=pointer]:
+      - /url: https://github.com/anick8
+      - text: GitHub
+  - generic [aria-hidden] [ref=e8]: Scroll
+  - generic [ref=e15]:
+    - generic [ref=e17]:
+      - heading "Aniketh AK" [level=1] [ref=e18]
+      - paragraph [ref=e19]: Software Engineer
+      - paragraph [ref=e20]: Open to freelance projects and full-time roles. Bangalore, India.
+      - generic [ref=e21]:
+        - link "Email me" [ref=e22] [cursor=pointer]:
+          - /url: mailto:anick8ak@gmail.com
+        - button "See my work" [ref=e23]
+    - generic [ref=e25]:
+      - paragraph [ref=e26]: About
+      - heading "Fullstack, Mobile & AI" [level=2] [ref=e27]
+      - paragraph [ref=e28]: Full Stack Engineer with 7+ years building web and mobile productsacross e-commerce, blockchain, and IoT. Specializes in Node.js, React/React Native, and Python, with recent focus on shipping AI-assisted development workflows independently architected and delivered a production MERN platform end-to-end in 3 months.
+      - list [ref=e29]:
+        - listitem [ref=e30]: 7+ years experience
+        - listitem [ref=e31]: Web · Mobile · AI
+        - listitem [ref=e32]: AWS Certified
+      - generic [ref=e33]:
+        - paragraph [ref=e34]: CSE Grad
+        - paragraph [ref=e35]: Reva University · 2014 – 2018 · Bangalore
+    - generic [ref=e38]:
+      - heading "Tools I ship with" [level=2] [ref=e40]
+      - generic [ref=e42]:
+        - list [ref=e43]:
+          - listitem [ref=e44]: Vercel
+          - listitem [ref=e47]: React Native
+          - listitem [ref=e50]: React
+          - listitem [ref=e53]: JavaScript
+          - listitem [ref=e56]: TypeScript
+          - listitem [ref=e59]: Node.js
+          - listitem [ref=e62]: Next.js
+          - listitem [ref=e65]: Expo
+          - listitem [ref=e68]: AngularJS
+          - listitem [ref=e71]: Python
+          - listitem [ref=e74]: MongoDB
+          - listitem [ref=e77]: PostgreSQL
+          - listitem [ref=e80]: Supabase
+          - listitem [ref=e83]: Linux
+          - listitem [ref=e86]: GitHub
+          - listitem [ref=e89]: Anthropic
+          - listitem [ref=e92]: OpenAI
+        - list [aria-hidden] [ref=e95]:
+          - listitem [ref=e96]: Vercel
+          - listitem [ref=e99]: React Native
+          - listitem [ref=e102]: React
+          - listitem [ref=e105]: JavaScript
+          - listitem [ref=e108]: TypeScript
+          - listitem [ref=e111]: Node.js
+          - listitem [ref=e114]: Next.js
+          - listitem [ref=e117]: Expo
+          - listitem [ref=e120]: AngularJS
+          - listitem [ref=e123]: Python
+          - listitem [ref=e126]: MongoDB
+          - listitem [ref=e129]: PostgreSQL
+          - listitem [ref=e132]: Supabase
+          - listitem [ref=e135]: Linux
+          - listitem [ref=e138]: GitHub
+          - listitem [ref=e141]: Anthropic
+          - listitem [ref=e144]: OpenAI
+    - generic [ref=e148]:
+      - paragraph [ref=e149]: Currently
+      - heading "Recent work" [level=2] [ref=e150]
+      - generic [ref=e151]:
+        - generic [ref=e152]:
+          - paragraph [ref=e153]: Freelance Fullstack Developer
+          - paragraph [ref=e154]:
+            - link "Flowshaala" [ref=e155] [cursor=pointer]:
+              - /url: https://www.flowshaala.com
+            - text: · 02/2026 – Present · Remote
+          - list [ref=e156]:
+            - listitem [ref=e157]: Sole architect of a fullstack MERN platform for movement class discovery and booking.
+            - listitem [ref=e158]: Built Authentication, Payments, and Admin dashboards from scratch.
+        - generic [ref=e159]:
+          - paragraph [ref=e160]: Software Developer (Mobile Lead)
+          - paragraph [ref=e161]: StoreHippo · 05/2022 – 01/2026 · (Remote)
+          - list [ref=e162]:
+            - listitem [ref=e163]: Led the migration of a legacy Cordova codebase to React Native, improving maintainability and performance.
+            - listitem [ref=e164]: Managed Android/iOS release cycles and production deployments end to end.
+    - generic [ref=e166]:
+      - paragraph [ref=e167]: Earlier
+      - heading "Backend & systems" [level=2] [ref=e168]
+      - generic [ref=e169]:
+        - generic [ref=e170]:
+          - paragraph [ref=e171]: Backend Developer
+          - paragraph [ref=e172]: Hashx · 08/2021 – 01/2022 · Bengaluru
+          - list [ref=e173]:
+            - listitem [ref=e174]: Built RESTful APIs with Node.js, Express and PostgreSQL in a distributed system.
+            - listitem [ref=e175]: Designed scalable microservices that made a distributed system more reliable.
+        - generic [ref=e176]:
+          - paragraph [ref=e177]: Systems Engineer
+          - paragraph [ref=e178]: Intellicar Telematics · 07/2018 – 07/2021 · Bangalore
+          - list [ref=e179]:
+            - listitem [ref=e180]: Reverse-engineered vehicle ECU data across multiple automobile manufacturers.
+            - listitem [ref=e181]: Automated debugging and data validation for IoT telemetry using Python.
+    - generic [ref=e183]:
+      - paragraph [ref=e184]: Skills
+      - heading "Toolbox" [level=2] [ref=e185]
+      - generic [ref=e186]:
+        - generic [ref=e187]:
+          - paragraph [ref=e188]: Frontend
+          - list [ref=e189]:
+            - listitem [ref=e190]: React
+            - listitem [ref=e191]: Angular
+            - listitem [ref=e192]: Next.js
+        - generic [ref=e193]:
+          - paragraph [ref=e194]: Backend
+          - list [ref=e195]:
+            - listitem [ref=e196]: Node.js
+            - listitem [ref=e197]: Express
+            - listitem [ref=e198]: Python
+        - generic [ref=e199]:
+          - paragraph [ref=e200]: Mobile
+          - list [ref=e201]:
+            - listitem [ref=e202]: React Native
+            - listitem [ref=e203]: Apache Cordova
+            - listitem [ref=e204]: iOS
+            - listitem [ref=e205]: Android
+        - generic [ref=e206]:
+          - paragraph [ref=e207]: Data
+          - list [ref=e208]:
+            - listitem [ref=e209]: PostgreSQL
+            - listitem [ref=e210]: MongoDB
+            - listitem [ref=e211]: MySQL
+            - listitem [ref=e212]: Cassandra
+            - listitem [ref=e213]: SupaBase
+        - generic [ref=e214]:
+          - paragraph [ref=e215]: Cloud
+          - list [ref=e216]:
+            - listitem [ref=e217]: AWS
+            - listitem [ref=e218]: Git
+            - listitem [ref=e219]: Linux
+            - listitem [ref=e220]: Railway
+            - listitem [ref=e221]: Vercel
+    - generic [ref=e223]:
+      - heading "Let's build something" [level=2] [ref=e224]
+      - paragraph [ref=e225]: Open to freelance projects and full-time roles.
+      - link "anick8ak@gmail.com" [ref=e226] [cursor=pointer]:
+        - /url: mailto:anick8ak@gmail.com
+      - generic [ref=e227]:
+        - link "LinkedIn profile and resume" [ref=e228] [cursor=pointer]:
+          - /url: https://www.linkedin.com/in/aniketh-ak
+          - text: LinkedIn
+        - link "GitHub profile" [ref=e229] [cursor=pointer]:
+          - /url: https://github.com/anick8
+          - text: GitHub

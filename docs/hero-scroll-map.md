@@ -54,7 +54,12 @@ fills the stretch between `intro`/`about` and `now`. It sits in the empty
 left 0–30% of frames 008–061 as a vertical loop on desktop, and as a
 horizontal strip along the bottom on phones. The loop only runs while the
 chapter is visible, pauses on hover or via its pause button, and becomes a
-static list under `prefers-reduced-motion`. Tiles use `.glass-tile` (no
+static list under `prefers-reduced-motion`. It is also directly scrollable:
+drag (mouse) or swipe (touch) moves it 1:1 and a flick coasts on with an
+exponential decay that starts at the release speed; arrow keys step it when
+the region is focused. Touch keeps the page gesture on the other axis
+(`touch-pan-y` on the strip, `touch-pan-x` on the column), and the vertical
+wheel always scrolls the page, since it drives the hero. Tiles use `.glass-tile` (no
 backdrop blur of their own) so the moving track stays cheap over the canvas.
 
 Gaps between a chapter's fade-out and the next chapter's fade-in are

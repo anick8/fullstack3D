@@ -1,0 +1,199 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - navigation "Contact" [ref=e3]:
+      - button "Copy email address anick8ak@gmail.com" [ref=e4] [cursor=pointer]:
+        - generic [ref=e5]: anick8ak@gmail.com
+        - generic [aria-hidden] [ref=e6]: Copied
+      - link "LinkedIn profile and resume" [ref=e7] [cursor=pointer]:
+        - /url: https://www.linkedin.com/in/aniketh-ak
+        - text: LinkedIn
+      - link "GitHub profile" [ref=e8] [cursor=pointer]:
+        - /url: https://github.com/anick8
+        - text: GitHub
+    - generic [aria-hidden]:
+      - generic: Scroll
+    - generic [ref=e10]:
+      - generic:
+        - generic:
+          - generic [ref=e12]:
+            - heading "Aniketh AK" [level=1] [ref=e13]
+            - paragraph [ref=e14]: Software Engineer
+            - paragraph [ref=e15]: Open to freelance projects and full-time roles. Bangalore, India.
+            - generic [ref=e16]:
+              - link "Email me" [ref=e17] [cursor=pointer]:
+                - /url: mailto:anick8ak@gmail.com
+              - button "See my work" [ref=e18] [cursor=pointer]
+          - generic [ref=e20]:
+            - paragraph [ref=e21]: About
+            - heading "Fullstack, Mobile & AI" [level=2] [ref=e22]
+            - paragraph [ref=e23]: Full Stack Engineer with 7+ years building web and mobile productsacross e-commerce, blockchain, and IoT. Specializes in Node.js, React/React Native, and Python, with recent focus on shipping AI-assisted development workflows independently architected and delivered a production MERN platform end-to-end in 3 months.
+            - list [ref=e24]:
+              - listitem [ref=e25]: 7+ years experience
+              - listitem [ref=e26]: Web · Mobile · AI
+              - listitem [ref=e27]: AWS Certified
+            - generic [ref=e28]:
+              - paragraph [ref=e29]: CSE Grad
+              - paragraph [ref=e30]: Reva University · 2014 – 2018 · Bangalore
+          - generic [ref=e32]:
+            - generic [ref=e33]:
+              - heading "Tools I ship with" [level=2] [ref=e34]
+              - button "Pause logo carousel" [ref=e35] [cursor=pointer]
+            - region "Tech stack logos. Drag, swipe or use the arrow keys to scroll." [ref=e38]:
+              - generic [ref=e40]:
+                - list [ref=e41]:
+                  - listitem [ref=e42]:
+                    - generic [ref=e45]: Vercel
+                  - listitem [ref=e46]:
+                    - generic [ref=e49]: React Native
+                  - listitem [ref=e50]:
+                    - generic [ref=e53]: React
+                  - listitem [ref=e54]:
+                    - generic [ref=e57]: JavaScript
+                  - listitem [ref=e58]:
+                    - generic [ref=e61]: TypeScript
+                  - listitem [ref=e62]:
+                    - generic [ref=e65]: Node.js
+                  - listitem [ref=e66]:
+                    - generic [ref=e69]: Next.js
+                  - listitem [ref=e70]:
+                    - generic [ref=e73]: Expo
+                  - listitem [ref=e74]:
+                    - generic [ref=e77]: AngularJS
+                  - listitem [ref=e78]:
+                    - generic [ref=e81]: Python
+                  - listitem [ref=e82]:
+                    - generic [ref=e85]: MongoDB
+                  - listitem [ref=e86]:
+                    - generic [ref=e89]: PostgreSQL
+                  - listitem [ref=e90]:
+                    - generic [ref=e93]: Supabase
+                  - listitem [ref=e94]:
+                    - generic [ref=e97]: Linux
+                  - listitem [ref=e98]:
+                    - generic [ref=e101]: GitHub
+                  - listitem [ref=e102]:
+                    - generic [ref=e105]: Anthropic
+                  - listitem [ref=e106]:
+                    - generic [ref=e109]: OpenAI
+                - list [aria-hidden] [ref=e110]:
+                  - listitem [ref=e111]:
+                    - generic [ref=e114]: Vercel
+                  - listitem [ref=e115]:
+                    - generic [ref=e118]: React Native
+                  - listitem [ref=e119]:
+                    - generic [ref=e122]: React
+                  - listitem [ref=e123]:
+                    - generic [ref=e126]: JavaScript
+                  - listitem [ref=e127]:
+                    - generic [ref=e130]: TypeScript
+                  - listitem [ref=e131]:
+                    - generic [ref=e134]: Node.js
+                  - listitem [ref=e135]:
+                    - generic [ref=e138]: Next.js
+                  - listitem [ref=e139]:
+                    - generic [ref=e142]: Expo
+                  - listitem [ref=e143]:
+                    - generic [ref=e146]: AngularJS
+                  - listitem [ref=e147]:
+                    - generic [ref=e150]: Python
+                  - listitem [ref=e151]:
+                    - generic [ref=e154]: MongoDB
+                  - listitem [ref=e155]:
+                    - generic [ref=e158]: PostgreSQL
+                  - listitem [ref=e159]:
+                    - generic [ref=e162]: Supabase
+                  - listitem [ref=e163]:
+                    - generic [ref=e166]: Linux
+                  - listitem [ref=e167]:
+                    - generic [ref=e170]: GitHub
+                  - listitem [ref=e171]:
+                    - generic [ref=e174]: Anthropic
+                  - listitem [ref=e175]:
+                    - generic [ref=e178]: OpenAI
+          - generic [ref=e179]:
+            - paragraph [ref=e180]: Currently
+            - heading "Recent work" [level=2] [ref=e181]
+            - generic [ref=e182]:
+              - generic [ref=e183]:
+                - paragraph [ref=e184]: Freelance Fullstack Developer
+                - paragraph [ref=e185]:
+                  - link "Flowshaala" [ref=e186] [cursor=pointer]:
+                    - /url: https://www.flowshaala.com
+                  - text: · 02/2026 – Present · Remote
+                - list [ref=e187]:
+                  - listitem [ref=e188]: Sole architect of a fullstack MERN platform for movement class discovery and booking.
+                  - listitem [ref=e189]: Built Authentication, Payments, and Admin dashboards from scratch.
+              - generic [ref=e190]:
+                - paragraph [ref=e191]: Software Developer (Mobile Lead)
+                - paragraph [ref=e192]: StoreHippo · 05/2022 – 01/2026 · (Remote)
+                - list [ref=e193]:
+                  - listitem [ref=e194]: Led the migration of a legacy Cordova codebase to React Native, improving maintainability and performance.
+                  - listitem [ref=e195]: Managed Android/iOS release cycles and production deployments end to end.
+          - generic [ref=e196]:
+            - paragraph [ref=e197]: Earlier
+            - heading "Backend & systems" [level=2] [ref=e198]
+            - generic [ref=e199]:
+              - generic [ref=e200]:
+                - paragraph [ref=e201]: Backend Developer
+                - paragraph [ref=e202]: Hashx · 08/2021 – 01/2022 · Bengaluru
+                - list [ref=e203]:
+                  - listitem [ref=e204]: Built RESTful APIs with Node.js, Express and PostgreSQL in a distributed system.
+                  - listitem [ref=e205]: Designed scalable microservices that made a distributed system more reliable.
+              - generic [ref=e206]:
+                - paragraph [ref=e207]: Systems Engineer
+                - paragraph [ref=e208]: Intellicar Telematics · 07/2018 – 07/2021 · Bangalore
+                - list [ref=e209]:
+                  - listitem [ref=e210]: Reverse-engineered vehicle ECU data across multiple automobile manufacturers.
+                  - listitem [ref=e211]: Automated debugging and data validation for IoT telemetry using Python.
+          - generic [ref=e212]:
+            - paragraph [ref=e213]: Skills
+            - heading "Toolbox" [level=2] [ref=e214]
+            - generic [ref=e215]:
+              - generic [ref=e216]:
+                - paragraph [ref=e217]: Frontend
+                - list [ref=e218]:
+                  - listitem [ref=e219]: React
+                  - listitem [ref=e220]: Angular
+                  - listitem [ref=e221]: Next.js
+              - generic [ref=e222]:
+                - paragraph [ref=e223]: Backend
+                - list [ref=e224]:
+                  - listitem [ref=e225]: Node.js
+                  - listitem [ref=e226]: Express
+                  - listitem [ref=e227]: Python
+              - generic [ref=e228]:
+                - paragraph [ref=e229]: Mobile
+                - list [ref=e230]:
+                  - listitem [ref=e231]: React Native
+                  - listitem [ref=e232]: Apache Cordova
+                  - listitem [ref=e233]: iOS
+                  - listitem [ref=e234]: Android
+              - generic [ref=e235]:
+                - paragraph [ref=e236]: Data
+                - list [ref=e237]:
+                  - listitem [ref=e238]: PostgreSQL
+                  - listitem [ref=e239]: MongoDB
+                  - listitem [ref=e240]: MySQL
+                  - listitem [ref=e241]: Cassandra
+                  - listitem [ref=e242]: SupaBase
+              - generic [ref=e243]:
+                - paragraph [ref=e244]: Cloud
+                - list [ref=e245]:
+                  - listitem [ref=e246]: AWS
+                  - listitem [ref=e247]: Git
+                  - listitem [ref=e248]: Linux
+                  - listitem [ref=e249]: Railway
+                  - listitem [ref=e250]: Vercel
+          - generic [ref=e251]:
+            - heading "Let's build something" [level=2] [ref=e252]
+            - paragraph [ref=e253]: Open to freelance projects and full-time roles.
+            - link "anick8ak@gmail.com" [ref=e254] [cursor=pointer]:
+              - /url: mailto:anick8ak@gmail.com
+            - generic [ref=e255]:
+              - link "LinkedIn profile and resume" [ref=e256] [cursor=pointer]:
+                - /url: https://www.linkedin.com/in/aniketh-ak
+                - text: LinkedIn
+              - link "GitHub profile" [ref=e257] [cursor=pointer]:
+                - /url: https://github.com/anick8
+                - text: GitHub
+  - alert [ref=e258]

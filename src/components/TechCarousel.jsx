@@ -1,11 +1,48 @@
 "use client";
 
-import { useAnimate } from "framer-motion";
+import {
+  animate,
+  m,
+  useAnimationFrame,
+  useMotionValue,
+  useTransform,
+  wrap,
+} from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 const LOOP_SECONDS = 40;
 const DESKTOP_QUERY = "(min-width: 768px)";
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
+/** Pointer travel (px) before a press counts as a drag, so taps stay taps. */
+const DRAG_THRESHOLD = 4;
+/** Distance (px) one arrow-key press scrolls. */
+const KEY_STEP = 120;
+/** Momentum decay time constant (s): how long a flick keeps coasting. */
+const GLIDE_TAU = 0.4;
+/** Decay constants the glide runs for; 4 leaves ~2% of the throw at the end. */
+const GLIDE_SPANS = 4;
+const GLIDE_NORM = 1 - Math.exp(-GLIDE_SPANS);
+/** Exponential decay as a 0–1 easing, the curve an inertial scroll follows. */
+const glideEase = (p) => (1 - Math.exp(-GLIDE_SPANS * p)) / GLIDE_NORM;
+const KEY_SPRING = { type: "spring", stiffness: 300, damping: 35 };
+/** Only pointer samples this recent (ms) count toward the release velocity. */
+const VELOCITY_WINDOW_MS = 100;
+
+/**
+ * Release velocity (px/s) from recent pointer samples. Returns 0 when the
+ * pointer had come to rest, so a slow, deliberate drop doesn’t fling.
+ * @param {{ t: number, v: number }[]} samples oldest first
+ * @param {number} now event timestamp of the release
+ * @returns {number}
+ */
+export function releaseVelocity(samples, now) {
+  const recent = samples.filter((s) => now - s.t <= VELOCITY_WINDOW_MS);
+  if (recent.length < 2) return 0;
+  const first = recent[0];
+  const last = recent[recent.length - 1];
+  const dt = last.t - first.t;
+  return dt > 0 ? ((last.v - first.v) / dt) * 1000 : 0;
+}
 
 // Icon over label on phones (horizontal strip), icon beside label on desktop
 // (vertical column). No per-tile backdrop blur: the panel's own blur does
@@ -80,49 +117,153 @@ function PlayIcon() {
 
 /**
  * The "stack" hero chapter: an endless loop of tech logos inside a glass
- * panel. Horizontal strip on phones, vertical column on desktop. The list is
- * rendered twice and the track slides by exactly half its length, so the
- * loop point is seamless. It only runs while its chapter is on screen and
- * not paused (button) or hovered; reduced motion gets a static layout.
+ * panel. Horizontal strip on phones, vertical column on desktop.
+ *
+ * One `offset` motion value drives everything: autoplay drifts it, drag and
+ * swipe set it directly, release coasts on with an exponential decay that
+ * starts at the pointer's speed, and arrow keys spring it by a step. The list is rendered twice
+ * and `offset` is wrapped to one copy's length, so any offset is seamless.
+ * Autoplay only runs while the chapter is on screen and not paused, hovered
+ * or being interacted with; reduced motion gets a static layout.
  * @param {{
- *   chapter: { title: string, pauseLabel: string, playLabel: string, items: { id: string, name: string, path: string }[] },
+ *   chapter: { title: string, pauseLabel: string, playLabel: string, scrollLabel: string, items: { id: string, name: string, path: string }[] },
  *   active?: boolean,
  * }} props
  * @param {boolean} [props.active] whether the chapter is currently visible
  */
 export function TechCarousel({ chapter, active = false }) {
-  const [scope, animate] = useAnimate();
-  const controls = useRef(null);
+  const trackRef = useRef(null);
   const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const [grabbing, setGrabbing] = useState(false);
+  const [loopLength, setLoopLength] = useState(0);
   const reducedMotion = useMediaQuery(REDUCED_QUERY);
   const desktop = useMediaQuery(DESKTOP_QUERY);
   const animated = reducedMotion === false && desktop !== null;
 
-  useEffect(() => {
-    const track = scope.current;
-    if (!animated || !track) return undefined;
-    const keyframes = desktop
-      ? { x: 0, y: ["0%", "-50%"] }
-      : { x: ["0%", "-50%"], y: 0 };
-    controls.current = animate(track, keyframes, {
-      duration: LOOP_SECONDS,
-      ease: "linear",
-      repeat: Infinity,
-    });
-    controls.current.pause();
-    return () => {
-      controls.current?.stop();
-      controls.current = null;
-      track.style.transform = "";
-    };
-  }, [animated, desktop, animate, scope]);
+  const offset = useMotionValue(0);
+  const wrapped = useTransform(offset, (v) =>
+    loopLength ? wrap(-loopLength, 0, v) : 0,
+  );
+  // Pointer bookkeeping plus the in-flight glide; refs, not state, so a drag
+  // never re-renders.
+  const gesture = useRef({
+    id: null,
+    start: 0,
+    origin: 0,
+    dragging: false,
+    samples: [],
+  });
+  const glide = useRef(null);
 
-  const running = animated && active && !paused && !hovered;
   useEffect(() => {
-    if (running) controls.current?.play();
-    else controls.current?.pause();
-  }, [running, animated, desktop]);
+    const copy = trackRef.current?.firstElementChild;
+    if (!animated || !copy) return undefined;
+    const measure = () =>
+      setLoopLength(desktop ? copy.offsetHeight : copy.offsetWidth);
+    measure();
+    if (typeof ResizeObserver === "undefined") return undefined;
+    const observer = new ResizeObserver(measure);
+    observer.observe(copy);
+    return () => observer.disconnect();
+  }, [animated, desktop]);
+
+  // Switching axis starts the loop fresh on the new one.
+  useEffect(() => {
+    glide.current?.stop();
+    offset.set(0);
+  }, [desktop, offset]);
+
+  useEffect(() => () => glide.current?.stop(), []);
+
+  // Framer caps its per-frame delta at 40ms, which would slow the drift on
+  // low-fps devices, so step by wall-clock time since the last frame.
+  const lastFrame = useRef(null);
+  useAnimationFrame((time) => {
+    const elapsed = lastFrame.current === null ? 0 : time - lastFrame.current;
+    lastFrame.current = time;
+    const busy = gesture.current.id !== null || glide.current !== null;
+    if (!animated || !active || paused || hovered || busy || !loopLength) {
+      return;
+    }
+    const step = (loopLength / LOOP_SECONDS) * (Math.min(elapsed, 250) / 1000);
+    offset.set(offset.get() - step);
+  });
+
+  const axisOf = (event) => (desktop ? event.clientY : event.clientX);
+
+  /** @param {number} target @param {object} transition */
+  const glideTo = (target, transition) => {
+    glide.current?.stop();
+    const controls = animate(offset, target, transition);
+    glide.current = controls;
+    controls.then(() => {
+      if (glide.current === controls) glide.current = null;
+    });
+  };
+
+  const handlePointerDown = (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    glide.current?.stop();
+    glide.current = null;
+    gesture.current = {
+      id: event.pointerId,
+      start: axisOf(event),
+      origin: offset.get(),
+      dragging: false,
+      samples: [],
+    };
+  };
+
+  const handlePointerMove = (event) => {
+    const g = gesture.current;
+    if (g.id !== event.pointerId) return;
+    const travel = axisOf(event) - g.start;
+    if (!g.dragging) {
+      if (Math.abs(travel) < DRAG_THRESHOLD) return;
+      g.dragging = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setGrabbing(true);
+    }
+    const next = g.origin + travel;
+    offset.set(next);
+    g.samples.push({ t: event.timeStamp, v: next });
+    if (g.samples.length > 8) g.samples.shift();
+  };
+
+  const handlePointerEnd = (event) => {
+    const g = gesture.current;
+    if (g.id !== event.pointerId) return;
+    gesture.current = { ...g, id: null, dragging: false, samples: [] };
+    if (!g.dragging) return;
+    setGrabbing(false);
+    const velocity = releaseVelocity(g.samples, event.timeStamp);
+    if (velocity === 0) return;
+    // Throw distance chosen so the decay starts at exactly the release speed.
+    const throwDistance = (velocity * GLIDE_TAU) / GLIDE_NORM;
+    glideTo(offset.get() + throwDistance, {
+      duration: GLIDE_TAU * GLIDE_SPANS,
+      ease: glideEase,
+    });
+  };
+
+  const handleKeyDown = (event) => {
+    const back = desktop ? "ArrowUp" : "ArrowLeft";
+    const forward = desktop ? "ArrowDown" : "ArrowRight";
+    if (event.key !== back && event.key !== forward) return;
+    event.preventDefault();
+    const step = event.key === forward ? -KEY_STEP : KEY_STEP;
+    glideTo(offset.get() + step, KEY_SPRING);
+  };
+
+  // Trackpad sideways swipes scroll the phone strip. Vertical wheel is left
+  // to the page, which drives the whole hero.
+  const handleWheel = (event) => {
+    if (desktop || Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+    glide.current?.stop();
+    glide.current = null;
+    offset.set(offset.get() - event.deltaX);
+  };
 
   const { items } = chapter;
 
@@ -151,23 +292,47 @@ export function TechCarousel({ chapter, active = false }) {
           ))}
         </ul>
       ) : (
+        // The focus ring lives on this wrapper so the edge mask can't fade it.
         <div
-          className={`overflow-hidden md:min-h-0 md:flex-1 ${LOOP_MASK}`}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
+          role="region"
+          aria-label={chapter.scrollLabel}
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
+          className="rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/85 md:flex md:min-h-0 md:flex-1 md:flex-col"
         >
-          <div ref={scope} className="flex w-max md:w-full md:flex-col">
-            {[false, true].map((duplicate) => (
-              <ul
-                key={String(duplicate)}
-                aria-hidden={duplicate || undefined}
-                className="flex gap-2 pr-2 md:flex-col md:pb-2 md:pr-0"
-              >
-                {items.map((tech) => (
-                  <TechTile key={tech.id} item={tech} />
-                ))}
-              </ul>
-            ))}
+          <div
+            className={`select-none overflow-hidden touch-pan-y md:min-h-0 md:flex-1 md:touch-pan-x ${LOOP_MASK} ${
+              grabbing ? "cursor-grabbing" : "cursor-grab"
+            }`}
+            onPointerEnter={(e) =>
+              e.pointerType === "mouse" && setHovered(true)
+            }
+            onPointerLeave={(e) =>
+              e.pointerType === "mouse" && setHovered(false)
+            }
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerEnd}
+            onPointerCancel={handlePointerEnd}
+            onWheel={handleWheel}
+          >
+            <m.div
+              ref={trackRef}
+              className="flex w-max md:w-full md:flex-col"
+              style={desktop ? { y: wrapped } : { x: wrapped }}
+            >
+              {[false, true].map((duplicate) => (
+                <ul
+                  key={String(duplicate)}
+                  aria-hidden={duplicate || undefined}
+                  className="flex gap-2 pr-2 md:flex-col md:pb-2 md:pr-0"
+                >
+                  {items.map((tech) => (
+                    <TechTile key={tech.id} item={tech} />
+                  ))}
+                </ul>
+              ))}
+            </m.div>
           </div>
         </div>
       )}

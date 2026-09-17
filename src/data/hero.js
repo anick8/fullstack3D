@@ -85,6 +85,7 @@ export const CHAPTERS = [
     title: "Tools I ship with",
     pauseLabel: "Pause logo carousel",
     playLabel: "Play logo carousel",
+    scrollLabel: "Tech stack logos. Drag, swipe or use the arrow keys to scroll.",
     items: TECH_STACK,
   },
   {
