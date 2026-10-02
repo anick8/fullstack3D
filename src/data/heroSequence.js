@@ -40,3 +40,21 @@ export const SCROLL_LERP = 0.16;
 export function transformSrc(index) {
   return `${TRANSFORM_DIR}/${String(index + 1).padStart(3, '0')}.webp`;
 }
+
+/**
+ * Lightweight phone copy of the transform sequence: every 2nd frame at
+ * 1600px wide (`scripts/make-mobile-frames.sh`). Frame 001 is the same rest
+ * pose, so phones skip the mouse sequence entirely.
+ */
+export const TRANSFORM_MOBILE_COUNT = 76;
+export const TRANSFORM_MOBILE_DIR = '/frames/t2-m';
+/** Media query for devices that get the lightweight sequence. */
+export const PHONE_QUERY = '(max-width: 767px), (pointer: coarse)';
+
+/**
+ * @param {number} index 0-based frame index
+ * @returns {string} public URL of the phone transform frame
+ */
+export function transformMobileSrc(index) {
+  return `${TRANSFORM_MOBILE_DIR}/${String(index + 1).padStart(3, '0')}.webp`;
+}

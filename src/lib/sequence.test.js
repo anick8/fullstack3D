@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
-  chapterVisibility,
+  chapterRange,
+  chapterActive,
   coverRect,
   nearestLoaded,
   pointerToFrame,
@@ -84,6 +85,37 @@ describe("coverRect", () => {
     expect(r.w).toBeGreaterThan(400);
     expect(r.x).toBeLessThan(0);
   });
+
+  it("shifts the crop toward focalX and never leaves an empty edge", () => {
+    const out = () => ({ x: 0, y: 0, w: 0, h: 0 });
+    const left = coverRect(1600, 900, 400, 800, out(), 0);
+    const mid = coverRect(1600, 900, 400, 800, out(), 0.5);
+    const right = coverRect(1600, 900, 400, 800, out(), 1);
+    expect(left.x).toBe(0);
+    expect(mid.x).toBeCloseTo((400 - mid.w) / 2);
+    expect(right.x).toBeCloseTo(400 - right.w);
+    expect(left.x).toBeGreaterThan(mid.x);
+    expect(mid.x).toBeGreaterThan(right.x);
+  });
+
+  it("ignores focalX when the viewport is wider than the frame", () => {
+    const r = coverRect(1276, 720, 2000, 800, { x: 0, y: 0, w: 0, h: 0 }, 0.9);
+    expect(r.x).toBe(0);
+  });
+});
+
+describe("chapterRange", () => {
+  const range = { inStart: 0, inEnd: 0, outStart: 0.1, outEnd: 0.14 };
+  const mobileRange = { inStart: 0.07, inEnd: 0.09, outStart: 0.12, outEnd: 0.14 };
+
+  it("uses mobileRange on phones when the chapter has one", () => {
+    expect(chapterRange({ range, mobileRange }, false)).toBe(mobileRange);
+  });
+
+  it("uses range on desktop, or when there is no mobileRange", () => {
+    expect(chapterRange({ range, mobileRange }, true)).toBe(range);
+    expect(chapterRange({ range }, false)).toBe(range);
+  });
 });
 
 describe("scrollToFrame", () => {
@@ -124,27 +156,32 @@ describe('sectionProgress', () => {
   });
 });
 
-describe('chapterVisibility', () => {
+describe('chapterActive', () => {
   const range = { inStart: 0.2, inEnd: 0.3, outStart: 0.5, outEnd: 0.6 };
 
-  it('is 0 before fade-in and after fade-out', () => {
-    expect(chapterVisibility(0, range)).toBe(0);
-    expect(chapterVisibility(1, range)).toBe(0);
+  it('is off before the enter point and on at it', () => {
+    expect(chapterActive(0, range)).toBe(false);
+    expect(chapterActive(0.249, range)).toBe(false);
+    expect(chapterActive(0.25, range)).toBe(true);
   });
 
-  it('is 1 during the hold', () => {
-    expect(chapterVisibility(0.4, range)).toBe(1);
+  it('stays on through the hold and turns off at the exit point', () => {
+    expect(chapterActive(0.4, range)).toBe(true);
+    expect(chapterActive(0.549, range)).toBe(true);
+    expect(chapterActive(0.55, range)).toBe(false);
+    expect(chapterActive(1, range)).toBe(false);
   });
 
-  it('is between 0 and 1 mid-fade', () => {
-    const v = chapterVisibility(0.25, range);
-    expect(v).toBeGreaterThan(0);
-    expect(v).toBeLessThan(1);
+  it('is on from the very start when inStart and inEnd are 0', () => {
+    const early = { inStart: 0, inEnd: 0, outStart: 0.1, outEnd: 0.14 };
+    expect(chapterActive(0, early)).toBe(true);
+    expect(chapterActive(0.13, early)).toBe(false);
   });
 
-  it('stays visible once shown when outStart/outEnd are null', () => {
-    const holdRange = { inStart: 0.9, inEnd: 0.95, outStart: null, outEnd: null };
-    expect(chapterVisibility(0.95, holdRange)).toBe(1);
-    expect(chapterVisibility(1, holdRange)).toBe(1);
+  it('never turns off when outStart/outEnd are null', () => {
+    const hold = { inStart: 0.9, inEnd: 0.95, outStart: null, outEnd: null };
+    expect(chapterActive(0.5, hold)).toBe(false);
+    expect(chapterActive(0.95, hold)).toBe(true);
+    expect(chapterActive(1, hold)).toBe(true);
   });
 });

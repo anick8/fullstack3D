@@ -36,15 +36,26 @@ target every animation frame with `SCROLL_LERP = 0.16`
 
 | #   | id                    | Side      | Fade in      | Hold               | Fade out               | Frames visible            |
 | --- | --------------------- | --------- | ------------ | ------------------ | ---------------------- | ------------------------- |
-| 1   | `intro`               | left      | on from load | 0 – 0.10           | 0.10 – 0.14            | `lr2` mouse, then 001–008 |
-| 2   | `about`               | top-right | on from load | 0 – 0.10           | 0.10 – 0.14            | `lr2` mouse, then 001–008 |
+| 1   | `intro`               | left      | on from load | 0 – 0.10 (phones: 0 – 0.04) | 0.10 – 0.14 (phones: 0.04 – 0.07) | `lr2` mouse, then 001–008 |
+| 2   | `about`               | top-right (phones: bottom) | on from load (phones: 0.07 – 0.09) | 0 – 0.10 (phones: 0.09 – 0.12) | 0.10 – 0.14 (phones: 0.12 – 0.14) | `lr2` mouse, then 001–008 |
 | 2b  | `stack`               | left col (md+) / bottom strip | 0.14 – 0.18 | 0.18 – 0.40 | 0.40 – 0.44 | 008–061 |
 | 3   | `now`                 | left      | 0.46 – 0.50  | 0.50 – 0.60        | 0.60 – 0.64            | 061–091                   |
 | 4   | `earlier`             | left      | 0.66 – 0.70  | 0.70 – 0.78        | 0.78 – 0.82            | 094–121                   |
 | 5   | `skills`              | left      | 0.82 – 0.85  | 0.85 – 0.90        | 0.90 – 0.92            | 121–138                   |
 | 6   | `wins` ("Let's talk") | left      | 0.93 – 0.96  | 0.96 – 1.00, holds | none — stays on screen | 139–151                   |
 
-`about` shows from the very start alongside `intro` (top-right, `lr2` mouse
+**Phones (< 768px):** `intro` and `about` can't both fit on screen, so each has
+a `mobileRange` in `src/data/hero.js` (picked by `chapterRange()` in
+`src/lib/sequence.js`): `intro` first, then `about` in the same bottom slot,
+before `stack` fades in at 0.14.
+
+**Phone frames:** phones and touch devices skip `lr2` and load
+`/frames/t2-m` (76 frames, every 2nd transform frame at 1600px,
+`scripts/make-mobile-frames.sh`, ~3.4 MB instead of ~44 MB). The canvas also
+caps DPR at 1.5 there and, in portrait, slides the crop from the frame centre
+toward 72% across as the story moves right so the character stays in view.
+
+On desktop, `about` shows from the very start alongside `intro` (top-right, `lr2` mouse
 sequence then frames 001–008), rather than fading in after `intro` fades out.
 It now also shows education (shared `EDUCATION` in `src/data/hero.js`, same
 block as `skills`).
@@ -71,10 +82,31 @@ LinkedIn (also serves as the resume) and GitHub.
 
 ## Visibility math
 
-`chapterVisibility(progress, range)` in `src/lib/sequence.js`: smoothstep
-fade-in over `[inStart, inEnd]`, smoothstep fade-out over `[outStart, outEnd]`
-(the minimum of the two), and `1` for the whole range when `outStart`/`outEnd`
-are `null` (used for the final "wins" chapter, which holds to the end).
+Scroll decides *whether* a chapter is shown; a timed animation decides *how*,
+so no chapter is ever left half-faded at a scroll position.
+
+`chapterActive(progress, range)` in `src/lib/sequence.js`: a chapter switches
+**on** at the midpoint of `[inStart, inEnd]` and **off** at the midpoint of
+`[outStart, outEnd]`. `inStart = inEnd = 0` means on from load, and
+`null` out bounds mean it never switches off (the final "wins" chapter).
+`HeroChapters` flips a card's `shown` state only when that changes, and the
+card plays `chapterReveal` (`src/lib/motion.js`): rise + scale + fade in over
+0.6 s (0.12 s delay so a leaving card clears the slot), and a quicker 0.3 s
+exit. Reduced motion uses an opacity-only 0.2 s fade. No `filter` is used on
+the card wrapper: it would become a backdrop root and flatten the glass.
+
+| id        | On at (desktop) | Off at (desktop) | On at (phones) | Off at (phones) |
+| --------- | --------------- | ---------------- | -------------- | --------------- |
+| `intro`   | load            | 0.12             | load           | 0.055           |
+| `about`   | load            | 0.12             | 0.08           | 0.13            |
+| `stack`   | 0.16            | 0.42             | 0.16           | 0.42            |
+| `now`     | 0.48            | 0.62             | 0.48           | 0.62            |
+| `earlier` | 0.68            | 0.80             | 0.68           | 0.80            |
+| `skills`  | 0.835           | 0.91             | 0.835          | 0.91            |
+| `wins`    | 0.945           | never            | 0.945          | never           |
+
+The fade-in/hold/fade-out columns in the Chapters table above give the ranges
+these points are the midpoints of.
 
 ## Motion layer
 

@@ -96,3 +96,32 @@ export const wordItemReduced = {
   hidden: { y: "0%" },
   show: { y: "0%" },
 };
+
+/**
+ * Hero chapter cards: scroll only decides whether a card is shown; these
+ * play the reveal over time. Used as inline `animate` objects (not variants)
+ * so reduced motion applies reliably. No `filter`: a filter on the wrapper
+ * would turn it into a backdrop root and flatten the glass panel inside.
+ * The small `delay` on entry lets a card that is leaving clear the shared
+ * slot first.
+ */
+export const chapterReveal = {
+  shown: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.6, ease: EASE_OUT, delay: 0.12 },
+  },
+  hidden: {
+    opacity: 0,
+    y: 24,
+    scale: 0.98,
+    transition: { duration: 0.3, ease: EASE_OUT },
+  },
+};
+
+/** Opacity-only counterpart; `y`/`scale` are pinned so no offset lingers. */
+export const chapterRevealReduced = {
+  shown: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2 } },
+  hidden: { opacity: 0, y: 0, scale: 1, transition: { duration: 0.2 } },
+};

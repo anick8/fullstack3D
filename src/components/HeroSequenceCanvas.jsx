@@ -15,15 +15,25 @@ import {
   FRAME_COUNT,
   LERP,
   POSTER,
+  PHONE_QUERY,
   PRELOAD_CONCURRENCY,
   SCROLL_LERP,
   SCROLL_START,
   TRANSFORM_COUNT,
+  TRANSFORM_MOBILE_COUNT,
   frameSrc,
+  transformMobileSrc,
   transformSrc,
 } from "../data/heroSequence";
 
 const MAX_DPR = 2;
+/** Phones decode the canvas at a lower density to stay inside iOS memory limits. */
+const MAX_DPR_PHONE = 1.5;
+/** Portrait crop: horizontal focal point of the frame at the start and end of the scroll. */
+const FOCAL_START = 0.5;
+const FOCAL_END = 0.72;
+/** Fraction of the transform sequence before the portrait crop starts following the character. */
+const FOCAL_AFTER = 0.3;
 /** Draw-key namespaces so a mouse frame and a transform frame never collide. */
 const KEY_MOUSE = 0;
 const KEY_SCROLL = 10_000;
@@ -49,20 +59,43 @@ export default function HeroSequenceCanvas() {
   const canvasRef = useRef(null);
   const [reducedMotion, setReducedMotion] = useState(false);
 
+  // null until the client has checked the device, so nothing downloads twice.
+  const [phone, setPhone] = useState(null);
+
+  // Desktops get the full-size sequences; phones and touch devices never use
+  // the mouse sequence and get the lightweight transform frames instead.
   const mouseSeq = useImageSequence({
     count: FRAME_COUNT,
     center: CENTER_INDEX,
     src: frameSrc,
     concurrency: PRELOAD_CONCURRENCY,
+    enabled: phone === false,
   });
   const scrollSeq = useImageSequence({
     count: TRANSFORM_COUNT,
     center: 0,
     src: transformSrc,
     concurrency: PRELOAD_CONCURRENCY,
+    enabled: phone === false,
+  });
+  const phoneSeq = useImageSequence({
+    count: TRANSFORM_MOBILE_COUNT,
+    center: 0,
+    src: transformMobileSrc,
+    concurrency: PRELOAD_CONCURRENCY,
+    enabled: phone === true,
   });
   const mouseImages = mouseSeq.images;
-  const scrollImages = scrollSeq.images;
+  const scrollImages = phone ? phoneSeq.images : scrollSeq.images;
+  const scrollCount = phone ? TRANSFORM_MOBILE_COUNT : TRANSFORM_COUNT;
+
+  useEffect(() => {
+    const mq = window.matchMedia(PHONE_QUERY);
+    const update = () => setPhone(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   // Detect prefers-reduced-motion once on the client.
   useEffect(() => {
@@ -76,7 +109,7 @@ export default function HeroSequenceCanvas() {
   useEffect(() => {
     const wrapper = wrapperRef.current;
     const canvas = canvasRef.current;
-    if (!wrapper || !canvas) return undefined;
+    if (!wrapper || !canvas || phone === null) return undefined;
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return undefined;
     const section = wrapper.parentElement;
@@ -90,6 +123,8 @@ export default function HeroSequenceCanvas() {
       scrollCurrent: 0,
       scrollActive: false, // progress >= SCROLL_START
       drawnKey: -1,
+      drawnFocal: -1,
+      focal: 0.5, // horizontal crop focus, 0–1
       cssW: 0,
       cssH: 0,
       dpr: 1,
@@ -101,24 +136,43 @@ export default function HeroSequenceCanvas() {
     const rect = { x: 0, y: 0, w: 0, h: 0 };
 
     const draw = (img, key) => {
-      if (key === state.drawnKey) return;
+      if (key === state.drawnKey && state.focal === state.drawnFocal) return;
       coverRect(
         img.naturalWidth,
         img.naturalHeight,
         state.cssW,
         state.cssH,
         rect,
+        state.focal,
       );
       ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h);
       state.drawnKey = key;
+      state.drawnFocal = state.focal;
+    };
+
+    /**
+     * Portrait screens only see a slice of the 16:9 frame, so slide it toward
+     * the character as the story moves right. Quantised so tiny scroll
+     * changes don't force a repaint.
+     */
+    const focalFor = (frame) => {
+      if (state.cssH <= state.cssW) return 0.5;
+      const u = Math.min(frame / (scrollCount - 1), 1);
+      const t = Math.min(Math.max((u - FOCAL_AFTER) / (1 - FOCAL_AFTER), 0), 1);
+      const eased = t * t * (3 - 2 * t);
+      return Math.round((FOCAL_START + (FOCAL_END - FOCAL_START) * eased) * 200) / 200;
     };
 
     const updateProgress = () => {
       if (!section) return;
       const top = section.getBoundingClientRect().top;
-      state.progress = sectionProgress(top, section.offsetHeight, state.cssH);
+      state.progress = sectionProgress(
+        top,
+        section.offsetHeight,
+        window.innerHeight,
+      );
       const t = scrollToFrame(state.progress, {
-        count: TRANSFORM_COUNT,
+        count: scrollCount,
         start: SCROLL_START,
       });
       state.scrollActive = t !== -1;
@@ -130,7 +184,10 @@ export default function HeroSequenceCanvas() {
     const resize = () => {
       const { clientWidth: w, clientHeight: h } = wrapper;
       if (!w || !h) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+      const dpr = Math.min(
+        window.devicePixelRatio || 1,
+        phone ? MAX_DPR_PHONE : MAX_DPR,
+      );
       if (w === state.cssW && h === state.cssH && dpr === state.dpr) return;
       state.cssW = w;
       state.cssH = h;
@@ -143,6 +200,7 @@ export default function HeroSequenceCanvas() {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
       state.drawnKey = -1; // force redraw at the new size
+      state.drawnFocal = -1;
       updateProgress();
     };
 
@@ -163,15 +221,23 @@ export default function HeroSequenceCanvas() {
       const mouseAtRest =
         Math.abs(state.mouseCurrent - CENTER_INDEX) <= HANDOFF_EPS;
       const scrollAtRest = state.scrollCurrent <= HANDOFF_EPS;
-      const useScroll = state.scrollActive ? mouseAtRest : !scrollAtRest;
+      const useScroll = phone
+        ? true // the phone sequence starts on the rest pose; no mouse handoff
+        : state.scrollActive
+          ? mouseAtRest
+          : !scrollAtRest;
 
       if (useScroll) {
         const idx = nearestLoaded(scrollImages.current, state.scrollCurrent);
-        if (idx !== -1)
+        if (idx !== -1) {
+          state.focal = focalFor(state.scrollCurrent);
           return draw(scrollImages.current[idx], KEY_SCROLL + idx);
+        }
+        state.focal = 0.5;
       }
       const idx = nearestLoaded(mouseImages.current, state.mouseCurrent);
       if (idx !== -1) return draw(mouseImages.current[idx], KEY_MOUSE + idx);
+      state.focal = 0.5;
       if (state.poster) draw(state.poster, KEY_POSTER);
       return undefined;
     };
@@ -259,15 +325,15 @@ export default function HeroSequenceCanvas() {
       window.removeEventListener("blur", onLeave);
       document.documentElement.removeEventListener("pointerleave", onLeave);
     };
-  }, [mouseImages, scrollImages, reducedMotion]);
+  }, [mouseImages, scrollImages, scrollCount, phone, reducedMotion]);
 
   return (
     <div
       ref={wrapperRef}
-      className="pointer-events-none sticky top-0 z-0 h-screen w-full overflow-hidden bg-black"
+      className="pointer-events-none sticky top-0 z-0 h-lvh w-full overflow-hidden bg-black"
       aria-hidden="true"
-      data-ready={mouseSeq.ready ? "true" : "false"}
-      data-transform-ready={scrollSeq.ready ? "true" : "false"}
+      data-ready={(phone ? phoneSeq.ready : mouseSeq.ready) ? "true" : "false"}
+      data-transform-ready={(phone ? phoneSeq.ready : scrollSeq.ready) ? "true" : "false"}
     >
       <canvas ref={canvasRef} className="block h-full w-full" />
       <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent" />

@@ -15,6 +15,11 @@ export const metadata = {
     "AI-driven products with Node.js, React, React Native and Python.",
 };
 
+export const viewport = {
+  viewportFit: "cover",
+  themeColor: "#000000",
+};
+
 /**
  * Root layout — wraps every route.
  * @param {{ children: React.ReactNode }} props

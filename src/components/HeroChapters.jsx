@@ -3,14 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import { CHAPTERS } from "../data/hero";
 import { SCROLL_LERP } from "../data/heroSequence";
-import { chapterVisibility, sectionProgress } from "../lib/sequence";
+import { m } from "framer-motion";
+import { chapterReveal, chapterRevealReduced } from "../lib/motion";
+import {
+  chapterActive,
+  chapterRange,
+  sectionProgress,
+} from "../lib/sequence";
 import GlassPanel from "./GlassPanel";
 import { TechCarousel } from "./TechCarousel";
 
 /** How close the eased progress must get to the target before we stop nudging it. */
 const PROGRESS_EPS = 0.0005;
-/** Max translateY (px) a card starts offset by before it settles into place. */
-const RISE_PX = 32;
+/** Matches Tailwind's `md` breakpoint. */
+const DESKTOP_QUERY = "(min-width: 768px)";
 
 const SIDE_CLASS = {
   left:
@@ -19,10 +25,11 @@ const SIDE_CLASS = {
   right:
     "pointer-events-none absolute inset-x-4 top-6 bottom-6 z-10 flex items-end justify-center " +
     "md:inset-x-auto md:inset-y-10 md:right-6 md:items-center md:justify-end lg:right-16",
-  // Anchored to the top instead of centered, and pushed down far enough to
-  // clear the fixed ContactBar (top-right, ~44px tall) at every width.
+  // Bottom-anchored on phones (it takes the intro's place once that fades);
+  // from md up it sits top-right, pushed down far enough to clear the fixed
+  // ContactBar (~44px tall).
   "top-right":
-    "pointer-events-none absolute inset-x-4 top-20 z-10 flex items-start justify-center " +
+    "pointer-events-none absolute inset-x-4 top-6 bottom-6 z-10 flex items-end justify-center " +
     "md:inset-x-auto md:right-6 md:top-24 md:bottom-auto md:items-start md:justify-end lg:right-16",
   // Bottom strip on phones (clear of the centred character); a column in the
   // empty left 0–30% of frames 008–061 on desktop.
@@ -33,7 +40,7 @@ const SIDE_CLASS = {
 
 const PANEL_CLASS = {
   default:
-    "pointer-events-auto max-h-[70vh] w-[min(92vw,30rem)] overflow-y-auto px-6 py-7 sm:px-8 sm:py-9",
+    "pointer-events-auto max-h-[calc(100svh-7rem)] w-[min(92vw,30rem)] overflow-y-auto overscroll-contain px-5 py-6 sm:px-8 sm:py-9 md:max-h-[70vh]",
   stack:
     "pointer-events-auto w-[min(92vw,30rem)] p-4 md:h-full md:max-h-[40rem] md:w-60 md:p-5 lg:w-64",
 };
@@ -46,13 +53,21 @@ const PANEL_CLASS = {
  */
 export default function HeroChapters() {
   const outerRef = useRef(null);
-  const cardRefs = useRef([]);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [desktop, setDesktop] = useState(true);
   const [shown, setShown] = useState(() => CHAPTERS.map(() => false));
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => setReducedMotion(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_QUERY);
+    const update = () => setDesktop(mq.matches);
     update();
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
@@ -68,7 +83,6 @@ export default function HeroChapters() {
       current: 0,
       applied: null, // last progress the cards were painted at
       raf: 0,
-      vis: new Array(CHAPTERS.length).fill(-1),
       shown: new Array(CHAPTERS.length).fill(false),
     };
 
@@ -81,27 +95,14 @@ export default function HeroChapters() {
       );
     };
 
+    // Scroll only flips a card on or off; the reveal itself is a timed
+    // animation (see `chapterReveal`), so no card is ever left half-shown.
     const paint = (progress) => {
       CHAPTERS.forEach((chapter, i) => {
-        const el = cardRefs.current[i];
-        if (!el) return;
-        const v = chapterVisibility(progress, chapter.range);
-        if (Math.abs(v - state.vis[i]) < 0.002) return;
-        state.vis[i] = v;
-        const shown = v > 0.01;
-        el.style.opacity = String(v);
-        el.style.pointerEvents = shown ? "auto" : "none";
-        if (shown) el.removeAttribute("inert");
-        else el.setAttribute("inert", "");
-        if (state.shown[i] !== shown) {
-          state.shown[i] = shown;
-          setShown((prev) => prev.map((s, j) => (j === i ? shown : s)));
-        }
-        if (!reducedMotion) {
-          const translate = (1 - v) * RISE_PX;
-          const scale = 0.98 + v * 0.02;
-          el.style.transform = `translateY(${translate}px) scale(${scale})`;
-        }
+        const shown = chapterActive(progress, chapterRange(chapter, desktop));
+        if (state.shown[i] === shown) return;
+        state.shown[i] = shown;
+        setShown((prev) => prev.map((s, j) => (j === i ? shown : s)));
       });
     };
 
@@ -146,7 +147,9 @@ export default function HeroChapters() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, desktop]);
+
+  const reveal = reducedMotion ? chapterRevealReduced : chapterReveal;
 
   const handleExplore = (targetProgress) => {
     const section = outerRef.current?.parentElement;
@@ -161,15 +164,14 @@ export default function HeroChapters() {
 
   return (
     <div ref={outerRef} className="pointer-events-none absolute inset-0 z-10">
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+      <div className="sticky top-0 h-svh w-full overflow-hidden">
         {CHAPTERS.map((chapter, i) => (
-          <div
+          <m.div
             key={chapter.id}
-            ref={(el) => {
-              cardRefs.current[i] = el;
-            }}
             className={SIDE_CLASS[chapter.side]}
-            style={{ opacity: 0, willChange: "opacity, transform" }}
+            initial={chapterReveal.hidden}
+            animate={shown[i] ? reveal.shown : reveal.hidden}
+            inert={shown[i] ? undefined : ""}
           >
             <GlassPanel
               tint={chapter.id !== "intro"}
@@ -181,7 +183,7 @@ export default function HeroChapters() {
                 onExplore={handleExplore}
               />
             </GlassPanel>
-          </div>
+          </m.div>
         ))}
       </div>
     </div>
@@ -213,7 +215,7 @@ function ChapterContent({ chapter, active, onExplore }) {
 
 function Eyebrow({ children }) {
   return (
-    <p className="mb-4 text-xs font-medium uppercase tracking-[0.3em] text-white/60">
+    <p className="mb-3 text-xs font-medium uppercase tracking-[0.3em] text-white/60 sm:mb-4">
       {children}
     </p>
   );
@@ -254,20 +256,20 @@ function AboutContent({ chapter }) {
   return (
     <>
       <Eyebrow>{chapter.eyebrow}</Eyebrow>
-      <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+      <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl md:text-3xl">
         {chapter.title}
       </h2>
       <p className="mt-4 text-sm leading-relaxed text-white/75 sm:text-base">
         {chapter.summary}
       </p>
-      <ul className="mt-6 flex flex-wrap gap-2">
+      <ul className="mt-4 flex flex-wrap gap-2 sm:mt-6">
         {chapter.stats.map((s) => (
           <li key={s} className="glass-chip">
             {s}
           </li>
         ))}
       </ul>
-      <div className="mt-6 border-t border-white/10 pt-4">
+      <div className="mt-4 border-t border-white/10 pt-3 sm:mt-6 sm:pt-4">
         <p className="text-sm font-medium text-white">
           {chapter.education.degree}
         </p>
@@ -283,10 +285,10 @@ function JobsContent({ chapter }) {
   return (
     <>
       <Eyebrow>{chapter.eyebrow}</Eyebrow>
-      <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+      <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl md:text-3xl">
         {chapter.title}
       </h2>
-      <div className="mt-5 space-y-6">
+      <div className="mt-4 space-y-4 sm:mt-5 sm:space-y-6">
         {chapter.jobs.map((job) => (
           <div key={`${job.company}-${job.role}`}>
             <p className="text-base font-medium text-white sm:text-lg">
@@ -325,10 +327,10 @@ function SkillsContent({ chapter }) {
   return (
     <>
       <Eyebrow>{chapter.eyebrow}</Eyebrow>
-      <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+      <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl md:text-3xl">
         {chapter.title}
       </h2>
-      <div className="mt-5 space-y-4">
+      <div className="mt-4 space-y-3 sm:mt-5 sm:space-y-4">
         {chapter.groups.map((group) => (
           <div key={group.label}>
             <p className="text-xs font-medium uppercase tracking-wide text-white/50">
@@ -352,7 +354,7 @@ function SkillsContent({ chapter }) {
 function WinsContent({ chapter }) {
   return (
     <>
-      <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+      <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl md:text-3xl">
         {chapter.title}
       </h2>
       <p className="mt-4 text-sm leading-relaxed text-white/75 sm:text-base">

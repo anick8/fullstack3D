@@ -61,18 +61,23 @@ export function pointerToFrame(x, width, { count, center, deadZone }) {
 
 /**
  * Compute the destination rect to draw `sw × sh` covering `dw × dh`
- * (like CSS `object-fit: cover`), centred.
+ * (like CSS `object-fit: cover`). Centred by default; `focalX` shifts the
+ * crop horizontally toward a point of interest, clamped so no edge of the
+ * destination is ever left empty.
  * @param {number} sw
  * @param {number} sh
  * @param {number} dw
  * @param {number} dh
  * @param {{ x: number, y: number, w: number, h: number }} out mutated in place
+ * @param {number} [focalX] 0–1 horizontal focal point of the source (0.5 = centre)
  */
-export function coverRect(sw, sh, dw, dh, out) {
+export function coverRect(sw, sh, dw, dh, out, focalX = 0.5) {
   const scale = Math.max(dw / sw, dh / sh);
   out.w = sw * scale;
   out.h = sh * scale;
-  out.x = (dw - out.w) / 2;
+  // Place the focal point at the centre of the destination, then clamp.
+  const x = dw / 2 - focalX * out.w;
+  out.x = Math.min(0, Math.max(dw - out.w, x));
   out.y = (dh - out.h) / 2;
   return out;
 }
@@ -108,32 +113,32 @@ export function sectionProgress(top, sectionHeight, viewportHeight) {
 }
 
 /**
- * Smoothstep ease: 0 below `edge0`, 1 above `edge1`, smoothed between.
- * @param {number} edge0
- * @param {number} edge1
- * @param {number} x
- * @returns {number} 0–1
- */
-function smoothstep(edge0, edge1, x) {
-  if (edge0 === edge1) return x < edge0 ? 0 : 1;
-  const t = Math.min(Math.max((x - edge0) / (edge1 - edge0), 0), 1);
-  return t * t * (3 - 2 * t);
-}
-
-/**
- * Visibility (0–1) of a scroll-linked chapter, given fade-in/hold/fade-out
- * bounds. `outStart`/`outEnd` may be `null` for a chapter that, once shown,
- * stays visible for the rest of the scroll range.
+ * Whether a scroll-linked chapter should be on screen. A chapter switches on
+ * at the midpoint of its fade-in bounds and off at the midpoint of its
+ * fade-out bounds, so it is either shown or hidden at any scroll position and
+ * its reveal motion plays out over time rather than following the scrollbar.
+ * `outStart`/`outEnd` may be `null` for a chapter that, once shown, stays
+ * visible for the rest of the scroll range.
  * @param {number} progress 0–1 section scroll progress
  * @param {{ inStart: number, inEnd: number, outStart: number|null, outEnd: number|null }} range
- * @returns {number} 0–1
+ * @returns {boolean}
  */
-export function chapterVisibility(
+export function chapterActive(
   progress,
   { inStart, inEnd, outStart, outEnd },
 ) {
-  const fadeIn = smoothstep(inStart, inEnd, progress);
-  if (outStart == null || outEnd == null) return fadeIn;
-  const fadeOut = 1 - smoothstep(outStart, outEnd, progress);
-  return Math.min(fadeIn, fadeOut);
+  if (progress < (inStart + inEnd) / 2) return false;
+  if (outStart == null || outEnd == null) return true;
+  return progress < (outStart + outEnd) / 2;
+}
+
+/**
+ * The scroll range a chapter uses at the current breakpoint: its
+ * `mobileRange` on phones when it has one, otherwise its shared `range`.
+ * @param {{ range: object, mobileRange?: object }} chapter
+ * @param {boolean} desktop true at the md breakpoint and up
+ * @returns {{ inStart: number, inEnd: number, outStart: number|null, outEnd: number|null }}
+ */
+export function chapterRange(chapter, desktop) {
+  return !desktop && chapter.mobileRange ? chapter.mobileRange : chapter.range;
 }

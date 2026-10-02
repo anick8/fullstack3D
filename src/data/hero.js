@@ -56,6 +56,8 @@ export const CHAPTERS = [
     id: "intro",
     side: "left",
     range: { inStart: 0, inEnd: 0, outStart: 0.1, outEnd: 0.14 },
+    // Phones can't fit intro and about at once, so they show one after the other.
+    mobileRange: { inStart: 0, inEnd: 0, outStart: 0.04, outEnd: 0.07 },
     name: PROFILE.name,
     role: PROFILE.role,
     tagline: PROFILE.tagline,
@@ -68,13 +70,14 @@ export const CHAPTERS = [
     id: "about",
     side: "top-right",
     range: { inStart: 0, inEnd: 0, outStart: 0.1, outEnd: 0.14 },
+    mobileRange: { inStart: 0.07, inEnd: 0.09, outStart: 0.12, outEnd: 0.14 },
     eyebrow: "About",
     title: "Fullstack, Mobile & AI",
     summary:
-      "Full Stack Engineer with 7+ years building web and mobile products"+
-      "across e-commerce, blockchain, and IoT. Specializes in Node.js, React/React Native,"+
-      " and Python, with recent focus on shipping AI-assisted development workflows  independently"+
-      " architected and delivered a production MERN platform end-to-end in 3 months.",
+      "Full Stack Engineer with 7+ years building web and mobile products " +
+      "across e-commerce, blockchain, and IoT. Specializes in Node.js, React/React Native, " +
+      "and Python, with recent focus on shipping AI-assisted development workflows. Independently " +
+      "architected and delivered a production MERN platform end-to-end in 3 months.",
     stats: ["7+ years experience", "Web · Mobile · AI", "AWS Certified"],
     education: EDUCATION,
   },
