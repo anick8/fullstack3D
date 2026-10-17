@@ -113,23 +113,46 @@ export function sectionProgress(top, sectionHeight, viewportHeight) {
 }
 
 /**
- * Whether a scroll-linked chapter should be on screen. A chapter switches on
- * at the midpoint of its fade-in bounds and off at the midpoint of its
- * fade-out bounds, so it is either shown or hidden at any scroll position and
- * its reveal motion plays out over time rather than following the scrollbar.
- * `outStart`/`outEnd` may be `null` for a chapter that, once shown, stays
- * visible for the rest of the scroll range.
+ * Scroll points a chapter switches on and off at: the midpoints of its
+ * fade-in and fade-out bounds. `exit` is `null` for a chapter that, once
+ * shown, stays visible for the rest of the scroll range.
+ * @param {{ inStart: number, inEnd: number, outStart: number|null, outEnd: number|null }} range
+ * @returns {{ enter: number, exit: number|null }}
+ */
+function chapterSpan({ inStart, inEnd, outStart, outEnd }) {
+  return {
+    enter: (inStart + inEnd) / 2,
+    exit: outStart == null || outEnd == null ? null : (outStart + outEnd) / 2,
+  };
+}
+
+/**
+ * Whether a scroll-linked chapter should be on screen. It is either shown or
+ * hidden at any scroll position, so its reveal motion plays out over time
+ * rather than following the scrollbar.
  * @param {number} progress 0–1 section scroll progress
  * @param {{ inStart: number, inEnd: number, outStart: number|null, outEnd: number|null }} range
  * @returns {boolean}
  */
-export function chapterActive(
-  progress,
-  { inStart, inEnd, outStart, outEnd },
-) {
-  if (progress < (inStart + inEnd) / 2) return false;
-  if (outStart == null || outEnd == null) return true;
-  return progress < (outStart + outEnd) / 2;
+export function chapterActive(progress, range) {
+  const { enter, exit } = chapterSpan(range);
+  return progress >= enter && (exit === null || progress < exit);
+}
+
+/**
+ * How far through its on-screen stretch a chapter is, 0 at the point it
+ * switches on to 1 at the point it switches off (or the end of the scroll
+ * for a chapter that never switches off). Clamped, so it is safe to call
+ * for chapters that are not showing.
+ * @param {number} progress 0–1 section scroll progress
+ * @param {{ inStart: number, inEnd: number, outStart: number|null, outEnd: number|null }} range
+ * @returns {number} 0–1
+ */
+export function chapterHold(progress, range) {
+  const { enter, exit } = chapterSpan(range);
+  const end = exit ?? 1;
+  if (end <= enter) return 0;
+  return Math.min(Math.max((progress - enter) / (end - enter), 0), 1);
 }
 
 /**

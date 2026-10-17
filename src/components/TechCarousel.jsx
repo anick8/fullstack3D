@@ -130,8 +130,9 @@ function PlayIcon() {
  *   active?: boolean,
  * }} props
  * @param {boolean} [props.active] whether the chapter is currently visible
+ * @param {import("framer-motion").Variants} [props.item] reveal variants for the header and track, driven by the parent's stagger
  */
-export function TechCarousel({ chapter, active = false }) {
+export function TechCarousel({ chapter, active = false, item }) {
   const trackRef = useRef(null);
   const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -269,7 +270,7 @@ export function TechCarousel({ chapter, active = false }) {
 
   return (
     <div className="flex flex-col gap-3 md:h-full md:gap-4">
-      <div className="flex items-center justify-between gap-3">
+      <m.div variants={item} className="flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold tracking-tight text-white md:text-xl">
           {chapter.title}
         </h2>
@@ -283,17 +284,20 @@ export function TechCarousel({ chapter, active = false }) {
             {paused ? <PlayIcon /> : <PauseIcon />}
           </button>
         )}
-      </div>
+      </m.div>
 
       {reducedMotion ? (
-        <ul className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:[&>li]:w-full md:[&>li]:flex-col md:[&>li]:px-2 md:[&>li]:text-[11px]">
+        <m.ul
+          variants={item}
+          className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:[&>li]:w-full md:[&>li]:flex-col md:[&>li]:px-2 md:[&>li]:text-[11px]">
           {items.map((tech) => (
             <TechTile key={tech.id} item={tech} />
           ))}
-        </ul>
+        </m.ul>
       ) : (
         // The focus ring lives on this wrapper so the edge mask can't fade it.
-        <div
+        <m.div
+          variants={item}
           role="region"
           aria-label={chapter.scrollLabel}
           tabIndex={0}
@@ -334,7 +338,7 @@ export function TechCarousel({ chapter, active = false }) {
               ))}
             </m.div>
           </div>
-        </div>
+        </m.div>
       )}
     </div>
   );

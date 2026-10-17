@@ -2,6 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   chapterRange,
   chapterActive,
+  chapterHold,
   coverRect,
   nearestLoaded,
   pointerToFrame,
@@ -183,5 +184,24 @@ describe('chapterActive', () => {
     expect(chapterActive(0.5, hold)).toBe(false);
     expect(chapterActive(0.95, hold)).toBe(true);
     expect(chapterActive(1, hold)).toBe(true);
+  });
+});
+
+describe('chapterHold', () => {
+  const range = { inStart: 0.2, inEnd: 0.3, outStart: 0.5, outEnd: 0.6 };
+
+  it('runs 0 → 1 between the enter and exit points, clamped outside', () => {
+    expect(chapterHold(0.1, range)).toBe(0);
+    expect(chapterHold(0.25, range)).toBe(0);
+    expect(chapterHold(0.4, range)).toBeCloseTo(0.5, 5);
+    expect(chapterHold(0.55, range)).toBe(1);
+    expect(chapterHold(0.9, range)).toBe(1);
+  });
+
+  it('runs to the end of the scroll when the chapter never exits', () => {
+    const hold = { inStart: 0.9, inEnd: 0.95, outStart: null, outEnd: null };
+    expect(chapterHold(0.925, hold)).toBe(0);
+    expect(chapterHold(0.9625, hold)).toBeCloseTo(0.5, 5);
+    expect(chapterHold(1, hold)).toBe(1);
   });
 });

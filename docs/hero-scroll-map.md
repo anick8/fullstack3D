@@ -89,11 +89,30 @@ so no chapter is ever left half-faded at a scroll position.
 **on** at the midpoint of `[inStart, inEnd]` and **off** at the midpoint of
 `[outStart, outEnd]`. `inStart = inEnd = 0` means on from load, and
 `null` out bounds mean it never switches off (the final "wins" chapter).
-`HeroChapters` flips a card's `shown` state only when that changes, and the
-card plays `chapterReveal` (`src/lib/motion.js`): rise + scale + fade in over
-0.6 s (0.12 s delay so a leaving card clears the slot), and a quicker 0.3 s
-exit. Reduced motion uses an opacity-only 0.2 s fade. No `filter` is used on
-the card wrapper: it would become a backdrop root and flatten the glass.
+`HeroChapters` flips a card's `shown` state only when that changes (tracked in
+a ref so it survives `desktop`/`reducedMotion` flipping after first render), and
+everything else is Framer Motion (`src/lib/motion.js`):
+
+- **Card:** `chapterReveal(side, desktop)` is a spring (stiffness 170, damping
+  24). On desktop a card slides 40px in from the side it is anchored to
+  (left/stack from the left, About from the right); on phones it rises 40px.
+  It leaves the same way, quicker (0.25 s). A 0.12 s entry delay lets a card
+  that is leaving clear the shared phone slot first.
+- **Content:** inside the card, `contentContainer` staggers its children
+  (`revealItem`: rise + blur-to-sharp, 70 ms apart, starting 0.25 s in). Chip
+  lists pop in one by one on a spring (`chipList`/`chipItem`) and lift on
+  hover; the intro name rises word by word out of masks (`wordItem`); CTAs and
+  links use `pillMotion` hover/press feedback. The tech carousel's header and
+  track take part in the same stagger.
+- **Drift:** while a card is showing, each paint writes a per-card
+  `motionValue` (no React state) that moves an inner wrapper from +14px to
+  -14px as you scroll through the card's stretch (`chapterHold()` in
+  `src/lib/sequence.js`), so held cards never feel pinned. It sits on an inner
+  element so it never fights the card's own enter/exit `x`/`y`.
+- **Reduced motion:** opacity-only 0.2 s fade, no stagger, no drift; every
+  `*Reduced` variant pins `x`/`y`/`scale`/`filter` so no offset lingers.
+- No `filter` on the card wrapper: it would become a backdrop root and flatten
+  the glass panel inside. (Blur on content children is fine.)
 
 | id        | On at (desktop) | Off at (desktop) | On at (phones) | Off at (phones) |
 | --------- | --------------- | ---------------- | -------------- | --------------- |

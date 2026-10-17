@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CHAPTERS } from "../data/hero";
 import { SCROLL_LERP } from "../data/heroSequence";
-import { m } from "framer-motion";
-import { chapterReveal, chapterRevealReduced } from "../lib/motion";
+import { m, motionValue } from "framer-motion";
+import {
+  chapterReveal,
+  chapterRevealReduced,
+  contentMotion,
+  pillMotion,
+} from "../lib/motion";
 import {
   chapterActive,
+  chapterHold,
   chapterRange,
   sectionProgress,
 } from "../lib/sequence";
@@ -15,6 +21,8 @@ import { TechCarousel } from "./TechCarousel";
 
 /** How close the eased progress must get to the target before we stop nudging it. */
 const PROGRESS_EPS = 0.0005;
+/** A held card drifts from +DRIFT_PX to -DRIFT_PX as you scroll through it. */
+const DRIFT_PX = 14;
 /** Matches Tailwind's `md` breakpoint. */
 const DESKTOP_QUERY = "(min-width: 768px)";
 
@@ -56,6 +64,13 @@ export default function HeroChapters() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [desktop, setDesktop] = useState(true);
   const [shown, setShown] = useState(() => CHAPTERS.map(() => false));
+  // One motion value per card: scroll writes it, the card reads it as `y`.
+  // No React state, so a held card drifts without re-rendering.
+  const drifts = useMemo(() => CHAPTERS.map(() => motionValue(0)), []);
+  // Mirrors `shown` for the paint loop. A ref (not per-effect state) so it
+  // survives the effect re-running when `desktop` or `reducedMotion` flips,
+  // which would otherwise leave a card stuck on from the first render.
+  const shownRef = useRef(CHAPTERS.map(() => false));
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -83,7 +98,6 @@ export default function HeroChapters() {
       current: 0,
       applied: null, // last progress the cards were painted at
       raf: 0,
-      shown: new Array(CHAPTERS.length).fill(false),
     };
 
     const updateTarget = () => {
@@ -97,11 +111,16 @@ export default function HeroChapters() {
 
     // Scroll only flips a card on or off; the reveal itself is a timed
     // animation (see `chapterReveal`), so no card is ever left half-shown.
+    // A showing card also drifts gently with scroll, so it never feels pinned.
     const paint = (progress) => {
       CHAPTERS.forEach((chapter, i) => {
-        const shown = chapterActive(progress, chapterRange(chapter, desktop));
-        if (state.shown[i] === shown) return;
-        state.shown[i] = shown;
+        const range = chapterRange(chapter, desktop);
+        const shown = chapterActive(progress, range);
+        if (shown && !reducedMotion) {
+          drifts[i].set((0.5 - chapterHold(progress, range)) * 2 * DRIFT_PX);
+        }
+        if (shownRef.current[i] === shown) return;
+        shownRef.current[i] = shown;
         setShown((prev) => prev.map((s, j) => (j === i ? shown : s)));
       });
     };
@@ -147,9 +166,7 @@ export default function HeroChapters() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [reducedMotion, desktop]);
-
-  const reveal = reducedMotion ? chapterRevealReduced : chapterReveal;
+  }, [reducedMotion, desktop, drifts]);
 
   const handleExplore = (targetProgress) => {
     const section = outerRef.current?.parentElement;
@@ -166,24 +183,21 @@ export default function HeroChapters() {
     <div ref={outerRef} className="pointer-events-none absolute inset-0 z-10">
       <div className="sticky top-0 h-svh w-full overflow-hidden">
         {CHAPTERS.map((chapter, i) => (
-          <m.div
+          <ChapterCard
             key={chapter.id}
-            className={SIDE_CLASS[chapter.side]}
-            initial={chapterReveal.hidden}
-            animate={shown[i] ? reveal.shown : reveal.hidden}
-            inert={shown[i] ? undefined : ""}
+            chapter={chapter}
+            shown={shown[i]}
+            drift={drifts[i]}
+            reducedMotion={reducedMotion}
+            desktop={desktop}
           >
-            <GlassPanel
-              tint={chapter.id !== "intro"}
-              className={PANEL_CLASS[chapter.id] ?? PANEL_CLASS.default}
-            >
-              <ChapterContent
-                chapter={chapter}
-                active={shown[i]}
-                onExplore={handleExplore}
-              />
-            </GlassPanel>
-          </m.div>
+            <ChapterContent
+              chapter={chapter}
+              active={shown[i]}
+              reducedMotion={reducedMotion}
+              onExplore={handleExplore}
+            />
+          </ChapterCard>
         ))}
       </div>
     </div>
@@ -191,106 +205,217 @@ export default function HeroChapters() {
 }
 
 /**
- * @param {{ chapter: object, active: boolean, onExplore: (p: number) => void }} props
+ * One positioned card. The outer wrapper owns the enter/exit spring; the
+ * inner one owns the scroll drift, so the two never fight over `y`.
+ * @param {{
+ *   chapter: object,
+ *   shown: boolean,
+ *   drift: import("framer-motion").MotionValue<number>,
+ *   reducedMotion: boolean,
+ *   desktop: boolean,
+ *   children: React.ReactNode,
+ * }} props
  */
-function ChapterContent({ chapter, active, onExplore }) {
+function ChapterCard({ chapter, shown, drift, reducedMotion, desktop, children }) {
+  const reveal = useMemo(
+    () =>
+      reducedMotion
+        ? chapterRevealReduced
+        : chapterReveal(chapter.side, desktop),
+    [reducedMotion, chapter.side, desktop],
+  );
+  return (
+    <m.div
+      className={SIDE_CLASS[chapter.side]}
+      initial={reveal.hidden}
+      animate={shown ? reveal.shown : reveal.hidden}
+      inert={shown ? undefined : ""}
+    >
+      <m.div
+        style={{ y: drift }}
+        className={chapter.id === "stack" ? "md:h-full" : undefined}
+      >
+        <GlassPanel
+          tint={chapter.id !== "intro"}
+          className={PANEL_CLASS[chapter.id] ?? PANEL_CLASS.default}
+        >
+          {children}
+        </GlassPanel>
+      </m.div>
+    </m.div>
+  );
+}
+
+/**
+ * Staggers a chapter's content in once its card is showing. Every block
+ * below takes its variants from `v`, so reduced motion swaps the whole set.
+ * @param {{ chapter: object, active: boolean, reducedMotion: boolean, onExplore: (p: number) => void }} props
+ */
+function ChapterContent({ chapter, active, reducedMotion, onExplore }) {
+  const v = reducedMotion ? contentMotion.reduced : contentMotion.full;
+  return (
+    <m.div
+      variants={v.container}
+      initial="hidden"
+      animate={active ? "show" : "hidden"}
+      className={chapter.id === "stack" ? "md:h-full" : undefined}
+    >
+      <ChapterBody
+        chapter={chapter}
+        active={active}
+        v={v}
+        onExplore={onExplore}
+      />
+    </m.div>
+  );
+}
+
+function ChapterBody({ chapter, active, v, onExplore }) {
   switch (chapter.id) {
     case "intro":
-      return <IntroContent chapter={chapter} onExplore={onExplore} />;
+      return <IntroContent chapter={chapter} v={v} onExplore={onExplore} />;
     case "about":
-      return <AboutContent chapter={chapter} />;
+      return <AboutContent chapter={chapter} v={v} />;
     case "stack":
-      return <TechCarousel chapter={chapter} active={active} />;
+      return <TechCarousel chapter={chapter} active={active} item={v.item} />;
     case "now":
     case "earlier":
-      return <JobsContent chapter={chapter} />;
+      return <JobsContent chapter={chapter} v={v} />;
     case "skills":
-      return <SkillsContent chapter={chapter} />;
+      return <SkillsContent chapter={chapter} v={v} />;
     case "wins":
-      return <WinsContent chapter={chapter} />;
+      return <WinsContent chapter={chapter} v={v} />;
     default:
       return null;
   }
 }
 
-function Eyebrow({ children }) {
+const H2 =
+  "text-xl font-semibold tracking-tight text-white sm:text-2xl md:text-3xl";
+const CHIP_HOVER = { y: -2 };
+
+function Eyebrow({ children, variants }) {
   return (
-    <p className="mb-3 text-xs font-medium uppercase tracking-[0.3em] text-white/60 sm:mb-4">
+    <m.p
+      variants={variants}
+      className="mb-3 text-xs font-medium uppercase tracking-[0.3em] text-white/60 sm:mb-4"
+    >
       {children}
-    </p>
+    </m.p>
   );
 }
 
-function IntroContent({ chapter, onExplore }) {
+/**
+ * A chip list: the `ul` carries the stagger, each chip pops in on a spring
+ * and lifts on hover.
+ * @param {{ items: string[], v: object, className: string }} props
+ */
+function ChipList({ items, v, className }) {
+  return (
+    <m.ul variants={v.chipList} className={className}>
+      {items.map((item) => (
+        <m.li
+          key={item}
+          variants={v.chip}
+          whileHover={CHIP_HOVER}
+          className="glass-chip"
+        >
+          {item}
+        </m.li>
+      ))}
+    </m.ul>
+  );
+}
+
+function IntroContent({ chapter, v, onExplore }) {
   return (
     <>
       <h1 className="text-balance text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-6xl">
-        {chapter.name}
+        {chapter.name.split(" ").map((word, i) => (
+          <span key={`${word}-${i}`}>
+            {i > 0 && " "}
+            {/* Each word rises out of its own mask. */}
+            <span className="-mb-[0.12em] inline-block overflow-hidden pb-[0.12em] align-bottom">
+              <m.span variants={v.word} className="inline-block">
+                {word}
+              </m.span>
+            </span>
+          </span>
+        ))}
       </h1>
-      <p className="mt-3 text-lg font-light text-white/80 sm:text-2xl">
+      <m.p
+        variants={v.item}
+        className="mt-3 text-lg font-light text-white/80 sm:text-2xl"
+      >
         {chapter.role}
-      </p>
-      <p className="mt-3 text-sm text-white/75">
+      </m.p>
+      <m.p variants={v.item} className="mt-3 text-sm text-white/75">
         {chapter.availability} {chapter.location}.
-      </p>
-      <div className="mt-8 flex flex-wrap gap-3">
-        <a
+      </m.p>
+      <m.div variants={v.item} className="mt-8 flex flex-wrap gap-3">
+        <m.a
           href={chapter.ctaPrimary.href}
           className="glass-pill glass-pill--primary"
+          {...pillMotion}
         >
           {chapter.ctaPrimary.label}
-        </a>
-        <button
+        </m.a>
+        <m.button
           type="button"
           className="glass-pill"
           onClick={() => onExplore(chapter.ctaSecondary.target)}
+          {...pillMotion}
         >
           {chapter.ctaSecondary.label}
-        </button>
-      </div>
+        </m.button>
+      </m.div>
     </>
   );
 }
 
-function AboutContent({ chapter }) {
+function AboutContent({ chapter, v }) {
   return (
     <>
-      <Eyebrow>{chapter.eyebrow}</Eyebrow>
-      <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl md:text-3xl">
+      <Eyebrow variants={v.item}>{chapter.eyebrow}</Eyebrow>
+      <m.h2 variants={v.item} className={H2}>
         {chapter.title}
-      </h2>
-      <p className="mt-4 text-sm leading-relaxed text-white/75 sm:text-base">
+      </m.h2>
+      <m.p
+        variants={v.item}
+        className="mt-4 text-sm leading-relaxed text-white/75 sm:text-base"
+      >
         {chapter.summary}
-      </p>
-      <ul className="mt-4 flex flex-wrap gap-2 sm:mt-6">
-        {chapter.stats.map((s) => (
-          <li key={s} className="glass-chip">
-            {s}
-          </li>
-        ))}
-      </ul>
-      <div className="mt-4 border-t border-white/10 pt-3 sm:mt-6 sm:pt-4">
+      </m.p>
+      <ChipList
+        items={chapter.stats}
+        v={v}
+        className="mt-4 flex flex-wrap gap-2 sm:mt-6"
+      />
+      <m.div
+        variants={v.item}
+        className="mt-4 border-t border-white/10 pt-3 sm:mt-6 sm:pt-4"
+      >
         <p className="text-sm font-medium text-white">
           {chapter.education.degree}
         </p>
         <p className="text-sm text-white/60">
           {chapter.education.school} · {chapter.education.period}
         </p>
-      </div>
+      </m.div>
     </>
   );
 }
 
-function JobsContent({ chapter }) {
+function JobsContent({ chapter, v }) {
   return (
     <>
-      <Eyebrow>{chapter.eyebrow}</Eyebrow>
-      <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl md:text-3xl">
+      <Eyebrow variants={v.item}>{chapter.eyebrow}</Eyebrow>
+      <m.h2 variants={v.item} className={H2}>
         {chapter.title}
-      </h2>
+      </m.h2>
       <div className="mt-4 space-y-4 sm:mt-5 sm:space-y-6">
         {chapter.jobs.map((job) => (
-          <div key={`${job.company}-${job.role}`}>
+          <m.div key={`${job.company}-${job.role}`} variants={v.item}>
             <p className="text-base font-medium text-white sm:text-lg">
               {job.role}
             </p>
@@ -316,71 +441,72 @@ function JobsContent({ chapter }) {
                 </li>
               ))}
             </ul>
-          </div>
+          </m.div>
         ))}
       </div>
     </>
   );
 }
 
-function SkillsContent({ chapter }) {
+function SkillsContent({ chapter, v }) {
   return (
     <>
-      <Eyebrow>{chapter.eyebrow}</Eyebrow>
-      <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl md:text-3xl">
+      <Eyebrow variants={v.item}>{chapter.eyebrow}</Eyebrow>
+      <m.h2 variants={v.item} className={H2}>
         {chapter.title}
-      </h2>
+      </m.h2>
       <div className="mt-4 space-y-3 sm:mt-5 sm:space-y-4">
         {chapter.groups.map((group) => (
-          <div key={group.label}>
+          <m.div key={group.label} variants={v.item}>
             <p className="text-xs font-medium uppercase tracking-wide text-white/50">
               {group.label}
             </p>
-            <ul className="mt-2 flex flex-wrap gap-2">
-              {group.items.map((item) => (
-                <li key={item} className="glass-chip">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
+            <ChipList
+              items={group.items}
+              v={v}
+              className="mt-2 flex flex-wrap gap-2"
+            />
+          </m.div>
         ))}
       </div>
-      
     </>
   );
 }
 
-function WinsContent({ chapter }) {
+function WinsContent({ chapter, v }) {
   return (
     <>
-      <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl md:text-3xl">
+      <m.h2 variants={v.item} className={H2}>
         {chapter.title}
-      </h2>
-      <p className="mt-4 text-sm leading-relaxed text-white/75 sm:text-base">
+      </m.h2>
+      <m.p
+        variants={v.item}
+        className="mt-4 text-sm leading-relaxed text-white/75 sm:text-base"
+      >
         {chapter.availability}
-      </p>
-      <a
+      </m.p>
+      <m.a
+        variants={v.item}
         href={`mailto:${chapter.email}`}
         className="mt-3 inline-block break-all text-lg font-medium text-white underline decoration-white/40 underline-offset-4 hover:decoration-white sm:text-xl"
       >
         {chapter.email}
-      </a>
-      <div className="mt-6 flex flex-wrap gap-3">
+      </m.a>
+      <m.div variants={v.item} className="mt-6 flex flex-wrap gap-3">
         {chapter.links.map((link) => (
-          <a
+          <m.a
             key={link.label}
             href={link.href}
             aria-label={link.ariaLabel}
             target="_blank"
             rel="noopener noreferrer"
             className="glass-pill"
+            {...pillMotion}
           >
             {link.label}
-          </a>
+          </m.a>
         ))}
-      </div>
-      
+      </m.div>
     </>
   );
 }

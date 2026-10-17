@@ -102,26 +102,85 @@ export const wordItemReduced = {
  * play the reveal over time. Used as inline `animate` objects (not variants)
  * so reduced motion applies reliably. No `filter`: a filter on the wrapper
  * would turn it into a backdrop root and flatten the glass panel inside.
- * The small `delay` on entry lets a card that is leaving clear the shared
- * slot first.
  */
-export const chapterReveal = {
-  shown: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.6, ease: EASE_OUT, delay: 0.12 },
-  },
-  hidden: {
-    opacity: 0,
-    y: 24,
-    scale: 0.98,
-    transition: { duration: 0.3, ease: EASE_OUT },
-  },
+const CARD_SPRING = { type: "spring", stiffness: 170, damping: 24, mass: 0.9 };
+/** How far (px) a card travels in from its edge, and back out on exit. */
+const SLIDE_PX = 40;
+
+/**
+ * A card slides in from the side it is anchored to on desktop and rises on
+ * phones, where every card shares the bottom slot. It leaves the way it
+ * came, quicker. The small entry `delay` lets a card that is leaving clear
+ * the shared slot first.
+ * @param {'left'|'right'|'top-right'|'stack'} side
+ * @param {boolean} desktop
+ */
+export function chapterReveal(side, desktop) {
+  const dir = side === "right" || side === "top-right" ? 1 : -1;
+  const offset = desktop ? { x: dir * SLIDE_PX, y: 0 } : { x: 0, y: SLIDE_PX };
+  return {
+    shown: {
+      opacity: 1,
+      x: 0,
+      y: 0,
+      scale: 1,
+      transition: {
+        ...CARD_SPRING,
+        delay: 0.12,
+        opacity: { duration: 0.4, ease: EASE_OUT, delay: 0.12 },
+      },
+    },
+    hidden: {
+      opacity: 0,
+      ...offset,
+      scale: 0.97,
+      transition: { duration: 0.25, ease: EASE_OUT },
+    },
+  };
+}
+
+/** Opacity-only counterpart; `x`/`y`/`scale` are pinned so no offset lingers. */
+export const chapterRevealReduced = {
+  shown: { opacity: 1, x: 0, y: 0, scale: 1, transition: { duration: 0.2 } },
+  hidden: { opacity: 0, x: 0, y: 0, scale: 1, transition: { duration: 0.2 } },
 };
 
-/** Opacity-only counterpart; `y`/`scale` are pinned so no offset lingers. */
-export const chapterRevealReduced = {
-  shown: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2 } },
-  hidden: { opacity: 0, y: 0, scale: 1, transition: { duration: 0.2 } },
+/**
+ * Staggered reveal of the content inside a chapter card: the container
+ * waits for the card to start landing, then its `revealItem` children rise
+ * in one after another; on exit they clear in reverse, fast.
+ */
+export const contentContainer = {
+  hidden: { transition: { staggerChildren: 0.02, staggerDirection: -1 } },
+  show: { transition: { staggerChildren: 0.07, delayChildren: 0.25 } },
+};
+
+/** A list of chips: carries only the stagger, so each `chipItem` pops in turn. */
+export const chipList = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } },
+};
+
+export const contentContainerReduced = {
+  hidden: { transition: { staggerChildren: 0 } },
+  show: { transition: { staggerChildren: 0 } },
+};
+export const chipListReduced = { hidden: {}, show: {} };
+
+/** Variant sets for chapter content, picked by the caller's `reducedMotion`. */
+export const contentMotion = {
+  full: {
+    container: contentContainer,
+    item: revealItem,
+    chip: chipItem,
+    chipList,
+    word: wordItem,
+  },
+  reduced: {
+    container: contentContainerReduced,
+    item: revealItemReduced,
+    chip: chipItemReduced,
+    chipList: chipListReduced,
+    word: wordItemReduced,
+  },
 };
